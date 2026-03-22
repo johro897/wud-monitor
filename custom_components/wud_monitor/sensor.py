@@ -211,8 +211,9 @@ class WUDLastPollSensor(WUDControllerSensorBase):
     @property
     def native_value(self) -> str | None:
         """Return the timestamp of the last successful coordinator update."""
-        if self.coordinator.last_update_success and self.coordinator.last_updated:
-            return self.coordinator.last_updated.strftime("%Y-%m-%d %H:%M:%S UTC")
+        last = getattr(self.coordinator, "last_poll_time", None)
+        if last:
+            return last.strftime("%Y-%m-%d %H:%M:%S UTC")
         return None
 
 

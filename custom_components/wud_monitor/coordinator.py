@@ -22,6 +22,7 @@ class WUDCoordinator(DataUpdateCoordinator):
         self.port = port
         self._base_url = f"http://{host}:{port}"
 
+        self.last_poll_time: object = None  # Set on each successful poll
         super().__init__(
             hass,
             _LOGGER,
@@ -31,6 +32,7 @@ class WUDCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self) -> list[dict]:
         """Fetch container data from WUD API. Called by the coordinator on each poll."""
+        from datetime import datetime, timezone
         url = f"{self._base_url}{API_CONTAINERS}"
         try:
             async with aiohttp.ClientSession() as session:
@@ -39,7 +41,10 @@ class WUDCoordinator(DataUpdateCoordinator):
                         raise UpdateFailed(f"WUD API returned HTTP {response.status}")
                     data = await response.json()
                     # API returns either a list or a dict with an "items" key
-                    return data if isinstance(data, list) else data.get("items", [])
+                    result = data if isinstance(data, list) else data.get("items", [])
+                    # Store poll time only on success
+                    self.last_poll_time = datetime.now(timezone.utc)
+                    return result
         except aiohttp.ClientError as err:
             raise UpdateFailed(f"Error communicating with WUD at {self._base_url}: {err}") from err
 
