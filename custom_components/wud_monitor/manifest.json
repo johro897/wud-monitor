@@ -1,0 +1,12 @@
+{
+  "domain": "wud_monitor",
+  "name": "WUD Monitor",
+  "version": "1.0.0",
+  "config_flow": true,
+  "documentation": "https://github.com/johro897/wud-monitor",
+  "issue_tracker": "https://github.com/johro897/wud-monitor/issues",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["@johro897"],
+  "iot_class": "local_polling"
+}
