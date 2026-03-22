@@ -5,6 +5,8 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timezone
 
+from homeassistant.util import dt as dt_util
+
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -210,10 +212,11 @@ class WUDLastPollSensor(WUDControllerSensorBase):
 
     @property
     def native_value(self) -> str | None:
-        """Return the timestamp of the last successful coordinator update."""
+        """Return the last poll time converted to the HA-configured local timezone."""
         last = getattr(self.coordinator, "last_poll_time", None)
         if last:
-            return last.strftime("%Y-%m-%d %H:%M:%S UTC")
+            local_dt = dt_util.as_local(last)
+            return local_dt.strftime("%Y-%m-%d %H:%M:%S")
         return None
 
 
