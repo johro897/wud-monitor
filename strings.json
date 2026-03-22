@@ -1,0 +1,38 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to What's Up Docker",
+        "description": "Enter the connection details for your WUD instance.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "instance_name": "Instance name",
+          "poll_interval": "Poll interval (minutes)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to WUD. Check that the host and port are correct and that WUD is running."
+    },
+    "abort": {
+      "already_configured": "This WUD instance is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WUD Monitor settings",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "instance_name": "Instance name",
+          "poll_interval": "Poll interval (minutes)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to WUD. Check that the host and port are correct and that WUD is running."
+    }
+  }
+}
