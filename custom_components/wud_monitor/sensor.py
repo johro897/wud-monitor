@@ -167,6 +167,23 @@ class WUDUpdateCountSensor(WUDControllerSensorBase):
             return 0
         return sum(1 for c in self.coordinator.data if c.get("updateAvailable", False))
 
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return a list of containers that have an update available."""
+        if not self.coordinator.data:
+            return {}
+        updates = [
+            {
+                "name": c.get("name"),
+                "current_version": _get_current_version(c),
+                "new_version": _get_new_version(c) or "–",
+                "semver_diff": (c.get("updateKind") or {}).get("semverDiff"),
+            }
+            for c in self.coordinator.data
+            if c.get("updateAvailable", False)
+        ]
+        return {"containers": updates}
+
 
 class WUDTotalCountSensor(WUDControllerSensorBase):
     """Sensor reporting the total number of monitored containers."""

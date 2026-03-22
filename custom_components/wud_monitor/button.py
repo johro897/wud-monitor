@@ -44,15 +44,17 @@ async def async_setup_entry(
         # Per-container scan button
         entities.append(WUDContainerScanButton(coordinator, entry, instance_name, container))
 
-        # One scan button per compose project (scans all containers in that project)
+        # One scan button per compose project, but only if the project has
+        # more than one container — otherwise it is identical to the container scan button
         if project and project not in projects_seen:
             projects_seen.add(project)
             project_containers = [
                 c for c in coordinator.data if _get_compose_project(c) == project
             ]
-            entities.append(
-                WUDProjectScanButton(coordinator, entry, instance_name, project, project_containers)
-            )
+            if len(project_containers) > 1:
+                entities.append(
+                    WUDProjectScanButton(coordinator, entry, instance_name, project, project_containers)
+                )
 
     async_add_entities(entities)
 
