@@ -7,6 +7,6 @@
   "documentation": "https://github.com/johro897/wud-monitor",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/johro897/wud-monitor/issues",
-  "version": "1.0",
-  "requirements": []
+  "requirements": [],
+  "version": "1.0.0"
 }
