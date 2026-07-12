@@ -8,12 +8,31 @@
           "host": "Host",
           "port": "Port",
           "instance_name": "Instance name",
-          "poll_interval": "Poll interval (minutes)"
+          "poll_interval": "Poll interval (minutes)",
+          "auth_method": "Authentication method"
+        },
+        "data_description": {
+          "auth_method": "Choose how to authenticate with the WUD API. Select 'None' if your WUD instance has no authentication configured."
+        }
+      },
+      "basic_auth": {
+        "title": "Basic Auth credentials",
+        "description": "Enter the username and password configured in WUD.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
+      },
+      "api_key": {
+        "title": "API key",
+        "description": "Enter the API key configured in WUD. It will be sent as a Bearer token.",
+        "data": {
+          "api_key": "API key"
         }
       }
     },
     "error": {
-      "cannot_connect": "Unable to connect to WUD. Check that the host and port are correct and that WUD is running."
+      "cannot_connect": "Unable to connect to WUD. Check the host, port and credentials."
     },
     "abort": {
       "already_configured": "This WUD instance is already configured."
@@ -27,12 +46,40 @@
           "host": "Host",
           "port": "Port",
           "instance_name": "Instance name",
-          "poll_interval": "Poll interval (minutes)"
+          "poll_interval": "Poll interval (minutes)",
+          "auth_method": "Authentication method"
+        },
+        "data_description": {
+          "auth_method": "Choose how to authenticate with the WUD API. Select 'None' if your WUD instance has no authentication configured."
+        }
+      },
+      "basic_auth": {
+        "title": "Basic Auth credentials",
+        "description": "Enter the username and password configured in WUD.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
+      },
+      "api_key": {
+        "title": "API key",
+        "description": "Enter the API key configured in WUD. It will be sent as a Bearer token.",
+        "data": {
+          "api_key": "API key"
         }
       }
     },
     "error": {
-      "cannot_connect": "Unable to connect to WUD. Check that the host and port are correct and that WUD is running."
+      "cannot_connect": "Unable to connect to WUD. Check the host, port and credentials."
+    }
+  },
+  "selector": {
+    "auth_method": {
+      "options": {
+        "none": "None",
+        "basic": "Basic Auth (username + password)",
+        "api_key": "API Key (Bearer token)"
+      }
     }
   }
 }
