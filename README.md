@@ -12,6 +12,7 @@ A Home Assistant integration for [What's Up Docker (WUD)](https://github.com/get
 - **Controller sensors** — total containers monitored, containers with updates, last poll time
 - **Force scan buttons** — trigger WUD to re-check updates for all containers, a specific compose project, or a single container
 - **Compose project grouping** — containers sharing a Docker Compose project are grouped under one HA device
+- **Authentication support** — connect to WUD instances protected by Basic Auth or API Key
 - **Re-deploy safe** — sensor identity is based on container name and watcher, not the Docker container ID which changes on every redeploy
 - **Configurable polling** — set how often HA polls WUD (default: 15 minutes)
 - **Multi-instance support** — add multiple WUD instances, each gets its own devices and sensors
@@ -72,14 +73,38 @@ labels:
 
 Go to **Settings → Devices & Services → Add Integration** and search for **WUD Monitor**.
 
+### Step 1 — Connection
+
 | Field | Description | Default |
 |---|---|---|
 | **Host** | IP address or hostname of your WUD instance | — |
 | **Port** | WUD web UI port | `3000` |
 | **Instance name** | Friendly name shown as the Controller device in HA | `WUD` |
 | **Poll interval** | How often HA fetches data from WUD (minutes) | `15` |
+| **Authentication method** | How to authenticate with the WUD API | `None` |
 
-Settings can be changed later via the integration's **Configure** button.
+### Step 2 — Authentication (if required)
+
+If your WUD instance has authentication enabled, select the matching method in step 1 and enter credentials in step 2.
+
+**None** — no credentials required. Skip step 2 entirely.
+
+**Basic Auth** — enter the username and password configured in WUD:
+
+```yaml
+# Example WUD environment variable for Basic Auth
+WUD_AUTH_BASIC_JOHNDOE_USER: johndoe
+WUD_AUTH_BASIC_JOHNDOE_PASSWORD: secret
+```
+
+**API Key** — enter the API key configured in WUD. It is sent as a `Bearer` token in the `Authorization` header:
+
+```yaml
+# Example WUD environment variable for API Key
+WUD_AUTH_BEARER_MYTOKEN_TOKEN: mysecrettoken
+```
+
+Settings can be changed later via the integration's **Configure** button, including switching authentication method.
 
 ---
 
@@ -123,11 +148,16 @@ One device per Docker Compose project. Linked to the Controller device via `via_
 ## Troubleshooting
 
 **Integration fails to connect**
-Verify that the WUD API is reachable:
+Verify that the WUD API is reachable from Home Assistant:
 ```
 http://<wud_host>:<wud_port>/api/containers
 ```
-This should return a JSON array of your monitored containers.
+This should return a JSON array of your monitored containers. If you get a `401 Unauthorized` response, your WUD instance requires authentication — reconfigure the integration and select the correct auth method.
+
+**Authentication fails**
+- For Basic Auth: verify the username and password match the `WUD_AUTH_BASIC_*` environment variables in your WUD container
+- For API Key: verify the token matches `WUD_AUTH_BEARER_*_TOKEN` and that it is sent as a `Bearer` token
+- You can test from the command line: `curl -H "Authorization: Bearer <token>" http://<wud_host>:<wud_port>/api/containers`
 
 **Duplicate sensors after container redeploy**
 This integration uses `watcher + name` as the stable entity identity, not the Docker container ID. If you are upgrading from an older version that used container ID, delete the old `unavailable` entities manually under **Settings → Devices & Services**.
