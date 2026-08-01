@@ -1,4 +1,6 @@
 {
   "name": "WUD Monitor",
-  "render_readme": true
+  "render_readme": true,
+  "zip_release": true,
+  "filename": "wud_monitor.zip"
 }
