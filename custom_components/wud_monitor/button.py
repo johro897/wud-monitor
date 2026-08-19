@@ -102,7 +102,10 @@ class WUDProjectScanButton(CoordinatorEntity, ButtonEntity):
         super().__init__(coordinator)
         self._entry = entry
         self._project = project
-        self._container_ids = [c["id"] for c in containers]
+        # (name, watcher) pairs, not raw ids — ids change on every redeploy,
+        # so they must be re-resolved from live coordinator data on each press
+        # (same reasoning as WUDContainerScanButton._get_current_container_id).
+        self._container_keys = [(c["name"], c.get("watcher", "docker")) for c in containers]
         self._attr_name = f"{instance_name} – {project} Force Scan"
         self._attr_unique_id = f"wud_{entry.entry_id}_project_scan_{project}"
         self._attr_icon = "mdi:refresh"
@@ -112,10 +115,20 @@ class WUDProjectScanButton(CoordinatorEntity, ButtonEntity):
             entry.entry_id, instance_name, containers[0]
         )
 
+    def _get_current_container_ids(self) -> list[str]:
+        """Resolve the project's current container ids from live coordinator data."""
+        by_key = {
+            (c.get("name"), c.get("watcher")): c["id"] for c in self.coordinator.data or []
+        }
+        return [by_key[key] for key in self._container_keys if key in by_key]
+
     async def async_press(self) -> None:
         """Trigger a scan for each container in the project sequentially."""
-        _LOGGER.debug("Triggering WUD scan for project '%s' (%d containers)", self._project, len(self._container_ids))
-        for container_id in self._container_ids:
+        container_ids = self._get_current_container_ids()
+        _LOGGER.debug(
+            "Triggering WUD scan for project '%s' (%d containers)", self._project, len(container_ids)
+        )
+        for container_id in container_ids:
             await self.coordinator.async_trigger_scan_container(container_id)
         await self.coordinator.async_request_refresh()
 
