@@ -180,6 +180,30 @@ Check the poll interval in the integration settings. You can also press the **Fo
 
 ---
 
+## Changelog
+
+### 2.2
+**Fixes** — requested in [#3](https://github.com/johro897/wud-monitor/issues/3)
+- Single-container scan now uses `POST` instead of `GET` — WUD only registers `POST /:id/watch`, so the per-container and compose-project Force Scan buttons were not actually triggering a scan
+- Compose-project Force Scan now re-resolves each container's current ID at press time instead of reusing IDs captured at entity setup, which went stale after any redeploy
+
+**Release notes link** — [#4](https://github.com/johro897/wud-monitor/issues/4)
+- New `release_notes` attribute on the per-container sensor — a browsable link to the update's changelog, read from WUD's `result.link` (populated when the container has a `wud.link.template` label configured in WUD)
+
+**Other additions** — [#5](https://github.com/johro897/wud-monitor/issues/5)
+- New `error` attribute — surfaces WUD's own reported error for a container (registry rate limit, auth failure, etc.) directly on the sensor
+- New **Refresh States** button — re-fetches container data without asking WUD to check for updates
+- Request timeouts increased from 10s to 15s for more headroom on slower WUD instances
+
+### 2.1
+Adds authentication support (Basic Auth and API Key) via a multi-step config flow, so WUD instances that require credentials are no longer rejected with a `401`. No breaking changes for existing installations.
+
+### 2.0
+Official HACS release.
+
+### 1.0
+First real release.
+
 ## Contributions
 
 Contributions are welcome! Open an issue or pull request on [GitHub](https://github.com/johro897/wud-monitor).
