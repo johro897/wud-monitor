@@ -49,6 +49,16 @@ labels:
   - "wud.tag.exclude=^.*(dev|alpha|beta|rc|alpine|slim|snapshot).*$"
 ```
 
+To get a `release_notes` link on the container's sensor (see below), add `wud.link.template` with the version placed via `${major}`/`${minor}`/`${patch}`/`${original}`/`${transformed}`/`${prerelease}`:
+
+```yaml
+labels:
+  - "wud.watch=true"
+  - "wud.link.template=https://github.com/getwud/wud/releases/tag/${original}"
+```
+
+Without this label WUD has no changelog URL to give, so `release_notes` simply won't be present on the sensor — nothing else is affected.
+
 ---
 
 ## Installation
@@ -118,6 +128,7 @@ Settings can be changed later via the integration's **Configure** button, includ
 | Monitored Containers | Sensor | Total number of containers WUD is watching |
 | Last Poll | Sensor | When HA last successfully fetched data from WUD |
 | Force Scan All | Button | Triggers `POST /api/containers/watch` to re-check all containers |
+| Refresh States | Button | Re-fetches current container data (`GET /api/containers`) without asking WUD to check for updates — useful right after you've made a change in WUD itself |
 
 ### Compose project device (`{instance_name} – {project}`)
 
@@ -136,6 +147,8 @@ One device per Docker Compose project. Linked to the Controller device via `via_
 | `new_version` | Available update version (`–` if none) |
 | `available_since` | When the new image was published (UTC) — only shown when update is available |
 | `days_available` | Days since the new version became available — only shown when update is available |
+| `release_notes` | Browsable link to the release notes / changelog for the available update — only shown when an update is available **and** the container has a `wud.link.template` label configured in WUD (see [WUD's watcher docs](https://github.com/getwud/wud/blob/main/docs/configuration/watchers/README.md)) |
+| `error` | The error WUD itself reported for this container (e.g. registry rate limit, registry auth failure) — only shown when WUD actually reports one |
 | `semver_diff` | Severity: `patch`, `minor`, or `major` |
 | `image` | Full image name (e.g. `esphome/esphome`) |
 | `registry` | Registry name (e.g. `ghcr.public`, `hub.public`) |
@@ -166,6 +179,30 @@ This integration uses `watcher + name` as the stable entity identity, not the Do
 Check the poll interval in the integration settings. You can also press the **Force Scan All** button to trigger an immediate refresh.
 
 ---
+
+## Changelog
+
+### 2.2
+**Fixes** — requested in [#3](https://github.com/johro897/wud-monitor/issues/3)
+- Single-container scan now uses `POST` instead of `GET` — WUD only registers `POST /:id/watch`, so the per-container and compose-project Force Scan buttons were not actually triggering a scan
+- Compose-project Force Scan now re-resolves each container's current ID at press time instead of reusing IDs captured at entity setup, which went stale after any redeploy
+
+**Release notes link** — [#4](https://github.com/johro897/wud-monitor/issues/4)
+- New `release_notes` attribute on the per-container sensor — a browsable link to the update's changelog, read from WUD's `result.link` (populated when the container has a `wud.link.template` label configured in WUD)
+
+**Other additions** — [#5](https://github.com/johro897/wud-monitor/issues/5)
+- New `error` attribute — surfaces WUD's own reported error for a container (registry rate limit, auth failure, etc.) directly on the sensor
+- New **Refresh States** button — re-fetches container data without asking WUD to check for updates
+- Request timeouts increased from 10s to 15s for more headroom on slower WUD instances
+
+### 2.1
+Adds authentication support (Basic Auth and API Key) via a multi-step config flow, so WUD instances that require credentials are no longer rejected with a `401`. No breaking changes for existing installations.
+
+### 2.0
+Official HACS release.
+
+### 1.0
+First real release.
 
 ## Contributions
 
