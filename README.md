@@ -147,6 +147,7 @@ One device per Docker Compose project. Linked to the Controller device via `via_
 | `available_since` | When the new image was published (UTC) — only shown when update is available |
 | `days_available` | Days since the new version became available — only shown when update is available |
 | `release_notes` | Browsable link to the release notes / changelog for the available update — only shown when an update is available **and** the container has a `wud.link.template` label configured in WUD (see [WUD's watcher docs](https://github.com/getwud/wud/blob/main/docs/configuration/watchers/README.md)) |
+| `error` | The error WUD itself reported for this container (e.g. registry rate limit, registry auth failure) — only shown when WUD actually reports one |
 | `semver_diff` | Severity: `patch`, `minor`, or `major` |
 | `image` | Full image name (e.g. `esphome/esphome`) |
 | `registry` | Registry name (e.g. `ghcr.public`, `hub.public`) |

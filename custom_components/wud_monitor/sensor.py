@@ -69,6 +69,12 @@ def _get_release_notes_url(container: dict) -> str | None:
     return result.get("link") or container.get("link")
 
 
+def _get_error_message(container: dict) -> str | None:
+    """Return the error message WUD reported for this container, if any (e.g. registry rate limit, auth failure)."""
+    error = container.get("error", {}) or {}
+    return error.get("message")
+
+
 def _get_image_created(container: dict) -> tuple[str | None, int | None]:
     """
     Return (formatted_date, days_since) based on image.created.
@@ -315,5 +321,11 @@ class WUDContainerSensor(CoordinatorEntity, SensorEntity):
             release_notes = _get_release_notes_url(container)
             if release_notes:
                 attrs["release_notes"] = release_notes
+
+        # WUD's own error for this container (e.g. registry rate limit, auth
+        # failure) — present whenever WUD reports one, regardless of update state.
+        error_message = _get_error_message(container)
+        if error_message:
+            attrs["error"] = error_message
 
         return attrs
