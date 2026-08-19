@@ -49,6 +49,16 @@ labels:
   - "wud.tag.exclude=^.*(dev|alpha|beta|rc|alpine|slim|snapshot).*$"
 ```
 
+To get a `release_notes` link on the container's sensor (see below), add `wud.link.template` with the version placed via `${major}`/`${minor}`/`${patch}`/`${original}`/`${transformed}`/`${prerelease}`:
+
+```yaml
+labels:
+  - "wud.watch=true"
+  - "wud.link.template=https://github.com/getwud/wud/releases/tag/${original}"
+```
+
+Without this label WUD has no changelog URL to give, so `release_notes` simply won't be present on the sensor — nothing else is affected.
+
 ---
 
 ## Installation
@@ -136,6 +146,7 @@ One device per Docker Compose project. Linked to the Controller device via `via_
 | `new_version` | Available update version (`–` if none) |
 | `available_since` | When the new image was published (UTC) — only shown when update is available |
 | `days_available` | Days since the new version became available — only shown when update is available |
+| `release_notes` | Browsable link to the release notes / changelog for the available update — only shown when an update is available **and** the container has a `wud.link.template` label configured in WUD (see [WUD's watcher docs](https://github.com/getwud/wud/blob/main/docs/configuration/watchers/README.md)) |
 | `semver_diff` | Severity: `patch`, `minor`, or `major` |
 | `image` | Full image name (e.g. `esphome/esphome`) |
 | `registry` | Registry name (e.g. `ghcr.public`, `hub.public`) |

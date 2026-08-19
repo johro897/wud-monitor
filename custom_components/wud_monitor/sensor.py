@@ -57,6 +57,18 @@ def _get_new_version(container: dict) -> str | None:
     return None
 
 
+def _get_release_notes_url(container: dict) -> str | None:
+    """
+    Return a browsable link for the container's available update, if WUD
+    resolved one (requires a `wud.link.template` label on the container —
+    see https://github.com/getwud/wud/blob/main/docs/configuration/watchers/README.md).
+    Prefers result.link (computed against the new version), falling back to
+    the container's top-level link (computed against the running version).
+    """
+    result = container.get("result", {}) or {}
+    return result.get("link") or container.get("link")
+
+
 def _get_image_created(container: dict) -> tuple[str | None, int | None]:
     """
     Return (formatted_date, days_since) based on image.created.
@@ -296,5 +308,12 @@ class WUDContainerSensor(CoordinatorEntity, SensorEntity):
         if container.get("updateAvailable") and available_since:
             attrs["available_since"] = available_since
             attrs["days_available"] = days_available
+
+        # Only meaningful once an update is available, and only present when
+        # the container has a wud.link.template label configured in WUD.
+        if container.get("updateAvailable"):
+            release_notes = _get_release_notes_url(container)
+            if release_notes:
+                attrs["release_notes"] = release_notes
 
         return attrs
