@@ -128,6 +128,7 @@ Settings can be changed later via the integration's **Configure** button, includ
 | Monitored Containers | Sensor | Total number of containers WUD is watching |
 | Last Poll | Sensor | When HA last successfully fetched data from WUD |
 | Force Scan All | Button | Triggers `POST /api/containers/watch` to re-check all containers |
+| Refresh States | Button | Re-fetches current container data (`GET /api/containers`) without asking WUD to check for updates — useful right after you've made a change in WUD itself |
 
 ### Compose project device (`{instance_name} – {project}`)
 

@@ -32,8 +32,9 @@ async def async_setup_entry(
 
     entities: list[ButtonEntity] = []
 
-    # Controller-level button: scan all containers at once
+    # Controller-level buttons: scan all containers, and refresh state only
     entities.append(WUDScanAllButton(coordinator, entry, instance_name))
+    entities.append(WUDRefreshButton(coordinator, entry, instance_name))
 
     # Track which compose projects already have a scan button to avoid duplicates
     projects_seen: set[str] = set()
@@ -85,6 +86,33 @@ class WUDScanAllButton(CoordinatorEntity, ButtonEntity):
             await self.coordinator.async_request_refresh()
         else:
             _LOGGER.error("WUD scan all failed")
+
+
+class WUDRefreshButton(CoordinatorEntity, ButtonEntity):
+    """Button that refreshes container states from WUD without triggering a scan.
+
+    Unlike Force Scan All, this only re-fetches the current container data
+    (GET /api/containers) — it does not ask WUD to check for new updates.
+    """
+
+    def __init__(
+        self,
+        coordinator: WUDCoordinator,
+        entry: ConfigEntry,
+        instance_name: str,
+    ) -> None:
+        """Initialize the refresh button."""
+        super().__init__(coordinator)
+        self._entry = entry
+        self._attr_name = f"WUD @ {instance_name} Refresh States"
+        self._attr_unique_id = f"wud_{entry.entry_id}_refresh"
+        self._attr_icon = "mdi:database-refresh"
+        self._attr_device_info = _build_controller_device(entry.entry_id, instance_name)
+
+    async def async_press(self) -> None:
+        """Re-fetch container data from WUD without triggering a scan."""
+        _LOGGER.debug("Refreshing WUD container states")
+        await self.coordinator.async_request_refresh()
 
 
 class WUDProjectScanButton(CoordinatorEntity, ButtonEntity):
