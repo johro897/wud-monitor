@@ -116,13 +116,13 @@ class WUDCoordinator(DataUpdateCoordinator):
             return False
 
     async def async_trigger_scan_container(self, container_id: str) -> bool:
-        """Trigger a scan for a specific container via GET /api/containers/{id}/watch."""
+        """Trigger a scan for a specific container via POST /api/containers/{id}/watch."""
         from .const import API_CONTAINER_WATCH
 
         url = f"{self._base_url}{API_CONTAINER_WATCH.format(container_id=container_id)}"
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(
+                async with session.post(
                     url,
                     timeout=aiohttp.ClientTimeout(total=10),
                     **self._session_kwargs(),
