@@ -4,6 +4,7 @@ from datetime import timedelta
 
 import aiohttp
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
@@ -84,7 +85,7 @@ class WUDCoordinator(DataUpdateCoordinator):
                     **self._session_kwargs(),
                 ) as response:
                     if response.status == 401:
-                        raise UpdateFailed(
+                        raise ConfigEntryAuthFailed(
                             "WUD API returned 401 Unauthorized — check authentication settings"
                         )
                     if response.status != 200:

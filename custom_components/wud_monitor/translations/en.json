@@ -29,13 +29,29 @@
         "data": {
           "api_key": "API key"
         }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate WUD Monitor",
+        "description": "WUD rejected the stored credentials for this instance — enter updated ones.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "instance_name": "Instance name",
+          "poll_interval": "Poll interval (minutes)",
+          "auth_method": "Authentication method",
+          "username": "Username",
+          "password": "Password",
+          "api_key": "API key"
+        }
       }
     },
     "error": {
-      "cannot_connect": "Unable to connect to WUD. Check the host, port and credentials."
+      "cannot_connect": "Unable to connect to WUD. Check the host, port and credentials.",
+      "invalid_auth": "WUD rejected the credentials. Check the username/password or API key."
     },
     "abort": {
-      "already_configured": "This WUD instance is already configured."
+      "already_configured": "This WUD instance is already configured.",
+      "reauth_successful": "Reauthentication successful."
     }
   },
   "options": {
@@ -70,7 +86,8 @@
       }
     },
     "error": {
-      "cannot_connect": "Unable to connect to WUD. Check the host, port and credentials."
+      "cannot_connect": "Unable to connect to WUD. Check the host, port and credentials.",
+      "invalid_auth": "WUD rejected the credentials. Check the username/password or API key."
     }
   },
   "selector": {

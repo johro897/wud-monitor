@@ -182,6 +182,12 @@ Check the poll interval in the integration settings. You can also press the **Fo
 
 ## Changelog
 
+### 2.3
+**Security hardening** — [#7](https://github.com/johro897/wud-monitor/issues/7)
+- The Basic Auth password and API key fields in the config flow are now masked (password-style input) instead of shown in plain text while typing
+- A `401 Unauthorized` response from WUD now triggers Home Assistant's standard reauthentication flow (a repair notification prompting you to re-enter credentials) instead of just marking entities unavailable with a generic error
+- The config flow now distinguishes "WUD rejected the credentials" from "couldn't reach WUD at all," instead of showing the same generic message for both
+
 ### 2.2
 **Fixes** — requested in [#3](https://github.com/johro897/wud-monitor/issues/3)
 - Single-container scan now uses `POST` instead of `GET` — WUD only registers `POST /:id/watch`, so the per-container and compose-project Force Scan buttons were not actually triggering a scan
