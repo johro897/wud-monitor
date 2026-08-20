@@ -268,18 +268,29 @@ class WUDContainerSensor(CoordinatorEntity, SensorEntity):
         )
 
     def _get_container(self) -> dict | None:
-        """Find this container's current data from the coordinator payload."""
-        for c in self.coordinator.data or []:
-            if c.get("name") == self._container_name and c.get("watcher") == self._container_watcher:
-                return c
-        return None
+        """Find this container's current data via the coordinator's cached lookup."""
+        return self.coordinator.container_by_key.get(
+            (self._container_name, self._container_watcher)
+        )
 
     @property
-    def native_value(self) -> str:
-        """Return 'Yes' if an update is available, otherwise 'No'."""
+    def available(self) -> bool:
+        """Unavailable if the coordinator poll itself failed, or if this specific
+        container has disappeared from WUD's payload (renamed/removed)."""
+        return super().available and self._get_container() is not None
+
+    @property
+    def native_value(self) -> str | None:
+        """Return 'Yes' if an update is available, otherwise 'No'.
+
+        Returns None (combined with `available` above) when the container is
+        no longer present in WUD's payload, instead of the literal string
+        "unknown" — so the entity correctly shows as unavailable rather than
+        a normal-looking state.
+        """
         container = self._get_container()
         if not container:
-            return "unknown"
+            return None
         return "Yes" if container.get("updateAvailable", False) else "No"
 
     @property

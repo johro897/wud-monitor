@@ -182,11 +182,16 @@ Check the poll interval in the integration settings. You can also press the **Fo
 
 ## Changelog
 
-### 2.3
+### 2.4
 **Security hardening** — [#7](https://github.com/johro897/wud-monitor/issues/7)
 - The Basic Auth password and API key fields in the config flow are now masked (password-style input) instead of shown in plain text while typing
 - A `401 Unauthorized` response from WUD now triggers Home Assistant's standard reauthentication flow (a repair notification prompting you to re-enter credentials) instead of just marking entities unavailable with a generic error
 - The config flow now distinguishes "WUD rejected the credentials" from "couldn't reach WUD at all," instead of showing the same generic message for both
+
+**Performance & correctness** — [#8](https://github.com/johro897/wud-monitor/issues/8)
+- Container lookups (per-container sensor, per-container/project Force Scan buttons) now use a single cached `{(name, watcher): container}` dict built once per poll, instead of each entity scanning the full container list on every property access
+- A container sensor whose container has disappeared from WUD (renamed/removed) now correctly shows as `unavailable` instead of the state `unknown`
+- The per-container Force Scan button no longer silently falls back to a stale container ID from setup time when the container can't be resolved live — it now logs an error and does nothing, instead of sending a request that would just 404 against WUD
 
 ### 2.2
 **Fixes** — requested in [#3](https://github.com/johro897/wud-monitor/issues/3)

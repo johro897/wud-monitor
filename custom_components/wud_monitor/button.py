@@ -144,11 +144,9 @@ class WUDProjectScanButton(CoordinatorEntity, ButtonEntity):
         )
 
     def _get_current_container_ids(self) -> list[str]:
-        """Resolve the project's current container ids from live coordinator data."""
-        by_key = {
-            (c.get("name"), c.get("watcher")): c["id"] for c in self.coordinator.data or []
-        }
-        return [by_key[key] for key in self._container_keys if key in by_key]
+        """Resolve the project's current container ids via the coordinator's cached lookup."""
+        by_key = self.coordinator.container_by_key
+        return [by_key[key]["id"] for key in self._container_keys if key in by_key]
 
     async def async_press(self) -> None:
         """Trigger a scan for each container in the project sequentially."""
@@ -176,7 +174,6 @@ class WUDContainerScanButton(CoordinatorEntity, ButtonEntity):
         self._entry = entry
         self._container_name = container["name"]
         self._container_watcher = container.get("watcher", "docker")
-        self._container_id = container["id"]
 
         self._attr_name = f"{container['name']} Force Scan"
         self._attr_unique_id = (
@@ -187,20 +184,28 @@ class WUDContainerScanButton(CoordinatorEntity, ButtonEntity):
             entry.entry_id, instance_name, container
         )
 
-    def _get_current_container_id(self) -> str:
+    def _get_current_container_id(self) -> str | None:
         """
-        Look up the current container ID from coordinator data.
-        Container IDs change on redeploy so we always fetch the latest.
+        Look up the current container ID via the coordinator's cached lookup.
+        Container IDs change on redeploy so we always resolve the latest one.
+        Returns None if the container is no longer present in WUD's payload
+        (renamed/removed) — callers must not fall back to a stale ID, since
+        that would just 404 against WUD instead of failing loudly.
         """
-        for c in self.coordinator.data or []:
-            if c.get("name") == self._container_name and c.get("watcher") == self._container_watcher:
-                return c["id"]
-        # Fall back to the ID stored at setup time
-        return self._container_id
+        container = self.coordinator.container_by_key.get(
+            (self._container_name, self._container_watcher)
+        )
+        return container["id"] if container else None
 
     async def async_press(self) -> None:
         """Trigger a scan for this specific container."""
         container_id = self._get_current_container_id()
+        if container_id is None:
+            _LOGGER.error(
+                "Cannot scan container '%s' — it is no longer present in WUD's data",
+                self._container_name,
+            )
+            return
         success = await self.coordinator.async_trigger_scan_container(container_id)
         if success:
             _LOGGER.debug("WUD scan triggered for container '%s'", self._container_name)
