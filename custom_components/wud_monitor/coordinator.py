@@ -4,6 +4,7 @@ from datetime import timedelta
 
 import aiohttp
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
@@ -37,6 +38,8 @@ class WUDCoordinator(DataUpdateCoordinator):
         self._base_url = f"http://{host}:{port}"
         self._auth_config = auth_config or {}
         self.last_poll_time: object = None
+        self._container_lookup_data: object = None  # identity of the data this lookup was built from
+        self._container_lookup: dict[tuple[str, str], dict] = {}
 
         super().__init__(
             hass,
@@ -44,6 +47,23 @@ class WUDCoordinator(DataUpdateCoordinator):
             name=DOMAIN,
             update_interval=timedelta(minutes=poll_interval),
         )
+
+    # ── Container lookup ─────────────────────────────────────────────────────
+
+    @property
+    def container_by_key(self) -> dict[tuple[str, str], dict]:
+        """Return a {(name, watcher): container} lookup dict.
+
+        Rebuilt only when self.data has actually been replaced by a new poll
+        (checked by identity, not by value) — O(N) once per refresh instead
+        of every entity doing its own O(N) scan on every property access.
+        """
+        if self._container_lookup_data is not self.data:
+            self._container_lookup_data = self.data
+            self._container_lookup = {
+                (c.get("name"), c.get("watcher")): c for c in (self.data or [])
+            }
+        return self._container_lookup
 
     # ── Auth helpers ──────────────────────────────────────────────────────────
 
@@ -84,7 +104,7 @@ class WUDCoordinator(DataUpdateCoordinator):
                     **self._session_kwargs(),
                 ) as response:
                     if response.status == 401:
-                        raise UpdateFailed(
+                        raise ConfigEntryAuthFailed(
                             "WUD API returned 401 Unauthorized — check authentication settings"
                         )
                     if response.status != 200:

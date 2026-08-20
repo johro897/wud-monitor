@@ -4,6 +4,7 @@ import aiohttp
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
+from homeassistant.helpers import selector
 from .const import (
     AUTH_METHOD_NONE,
     AUTH_METHOD_BASIC,
@@ -60,7 +61,9 @@ def _build_basic_auth_schema(defaults: dict) -> vol.Schema:
             ): str,
             vol.Required(
                 CONF_PASSWORD, default=defaults.get(CONF_PASSWORD, "")
-            ): str,
+            ): selector.TextSelector(
+                selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
+            ),
         }
     )
 
@@ -71,7 +74,9 @@ def _build_api_key_schema(defaults: dict) -> vol.Schema:
         {
             vol.Required(
                 CONF_API_KEY, default=defaults.get(CONF_API_KEY, "")
-            ): str,
+            ): selector.TextSelector(
+                selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
+            ),
         }
     )
 
@@ -92,8 +97,13 @@ def _build_headers(data: dict) -> dict:
     return {}
 
 
-async def _test_connection(data: dict) -> bool:
-    """Test that we can reach the WUD API with the given config."""
+async def _test_connection(data: dict) -> str:
+    """Test that we can reach the WUD API with the given config.
+
+    Returns "ok", "invalid_auth" (WUD reachable but rejected the
+    credentials), or "cannot_connect" (host unreachable, timeout, or any
+    other non-200/401 response).
+    """
     host = data[CONF_HOST]
     port = data[CONF_PORT]
     url = f"http://{host}:{port}/api/containers"
@@ -107,9 +117,13 @@ async def _test_connection(data: dict) -> bool:
                 headers=headers,
                 timeout=aiohttp.ClientTimeout(total=5),
             ) as response:
-                return response.status == 200
+                if response.status == 200:
+                    return "ok"
+                if response.status == 401:
+                    return "invalid_auth"
+                return "cannot_connect"
     except Exception:  # noqa: BLE001
-        return False
+        return "cannot_connect"
 
 
 class WUDMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -181,8 +195,9 @@ class WUDMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if errors is None:
             errors = {}
 
-        if not await _test_connection(self._data):
-            errors["base"] = "cannot_connect"
+        result = await _test_connection(self._data)
+        if result != "ok":
+            errors["base"] = "invalid_auth" if result == "invalid_auth" else "cannot_connect"
             # Return to the auth step so the user can correct credentials
             auth_method = self._data.get(CONF_AUTH_METHOD, AUTH_METHOD_NONE)
             if auth_method == AUTH_METHOD_BASIC:
@@ -207,6 +222,45 @@ class WUDMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_create_entry(
             title=self._data[CONF_INSTANCE_NAME],
             data=self._data,
+        )
+
+    async def async_step_reauth(self, entry_data: dict):
+        """Handle reauthentication triggered by ConfigEntryAuthFailed (e.g. a rotated token or changed password)."""
+        self._data = dict(entry_data)
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(self, user_input: dict | None = None):
+        """Ask for updated credentials for the existing entry and verify them."""
+        errors = {}
+
+        if user_input is not None:
+            self._data.update(user_input)
+            result = await _test_connection(self._data)
+            if result == "ok":
+                reauth_entry = self.hass.config_entries.async_get_entry(
+                    self.context["entry_id"]
+                )
+                self.hass.config_entries.async_update_entry(
+                    reauth_entry, data=self._data
+                )
+                await self.hass.config_entries.async_reload(reauth_entry.entry_id)
+                return self.async_abort(reason="reauth_successful")
+            errors["base"] = "invalid_auth" if result == "invalid_auth" else "cannot_connect"
+
+        auth_method = self._data.get(CONF_AUTH_METHOD, AUTH_METHOD_NONE)
+        if auth_method == AUTH_METHOD_BASIC:
+            schema = _build_basic_auth_schema(self._data)
+        elif auth_method == AUTH_METHOD_API_KEY:
+            schema = _build_api_key_schema(self._data)
+        else:
+            # No auth was configured but WUD started rejecting requests —
+            # let the user pick/enable an auth method again.
+            schema = _build_connection_schema(self._data)
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=schema,
+            errors=errors,
         )
 
     @staticmethod
@@ -275,8 +329,9 @@ class WUDMonitorOptionsFlow(config_entries.OptionsFlow):
         if errors is None:
             errors = {}
 
-        if not await _test_connection(self._data):
-            errors["base"] = "cannot_connect"
+        result = await _test_connection(self._data)
+        if result != "ok":
+            errors["base"] = "invalid_auth" if result == "invalid_auth" else "cannot_connect"
             auth_method = self._data.get(CONF_AUTH_METHOD, AUTH_METHOD_NONE)
             if auth_method == AUTH_METHOD_BASIC:
                 return self.async_show_form(
