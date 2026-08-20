@@ -182,6 +182,12 @@ Check the poll interval in the integration settings. You can also press the **Fo
 
 ## Changelog
 
+### 2.4
+**Performance & correctness** — [#8](https://github.com/johro897/wud-monitor/issues/8)
+- Container lookups (per-container sensor, per-container/project Force Scan buttons) now use a single cached `{(name, watcher): container}` dict built once per poll, instead of each entity scanning the full container list on every property access
+- A container sensor whose container has disappeared from WUD (renamed/removed) now correctly shows as `unavailable` instead of the state `unknown`
+- The per-container Force Scan button no longer silently falls back to a stale container ID from setup time when the container can't be resolved live — it now logs an error and does nothing, instead of sending a request that would just 404 against WUD
+
 ### 2.2
 **Fixes** — requested in [#3](https://github.com/johro897/wud-monitor/issues/3)
 - Single-container scan now uses `POST` instead of `GET` — WUD only registers `POST /:id/watch`, so the per-container and compose-project Force Scan buttons were not actually triggering a scan
