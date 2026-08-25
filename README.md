@@ -191,7 +191,6 @@ Check the poll interval in the integration settings. You can also press the **Fo
 - New **{container} Problem** binary sensor (`device_class: problem`) per container — lets you automate directly on "this container is broken" instead of templating the existing per-container `error` attribute
 - Both read from WUD data already being polled — no new API calls, no config changes needed
 
-### 2.5
 **Language support** — [#13](https://github.com/johro897/wud-monitor/issues/13)
 - Added `translations/sv.json`, `translations/de.json`, and `translations/fr.json` — the config flow, options flow, and auth-method selector now render in Swedish, German, and French, not just English
 - `strings.json`/`translations/en.json` are unchanged; falls back to English for any other HA language
