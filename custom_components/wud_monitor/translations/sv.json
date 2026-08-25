@@ -1,0 +1,102 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Anslut till What's Up Docker",
+        "description": "Ange anslutningsuppgifterna för din WUD-instans.",
+        "data": {
+          "host": "Värd",
+          "port": "Port",
+          "instance_name": "Instansnamn",
+          "poll_interval": "Pollningsintervall (minuter)",
+          "auth_method": "Autentiseringsmetod"
+        },
+        "data_description": {
+          "auth_method": "Välj hur du vill autentisera mot WUD-API:et. Välj 'Ingen' om din WUD-instans inte har någon autentisering konfigurerad."
+        }
+      },
+      "basic_auth": {
+        "title": "Basic Auth-uppgifter",
+        "description": "Ange användarnamnet och lösenordet som är konfigurerat i WUD.",
+        "data": {
+          "username": "Användarnamn",
+          "password": "Lösenord"
+        }
+      },
+      "api_key": {
+        "title": "API-nyckel",
+        "description": "Ange API-nyckeln som är konfigurerad i WUD. Den skickas som en Bearer-token.",
+        "data": {
+          "api_key": "API-nyckel"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Autentisera om WUD Monitor",
+        "description": "WUD avvisade de sparade uppgifterna för den här instansen — ange uppdaterade uppgifter.",
+        "data": {
+          "host": "Värd",
+          "port": "Port",
+          "instance_name": "Instansnamn",
+          "poll_interval": "Pollningsintervall (minuter)",
+          "auth_method": "Autentiseringsmetod",
+          "username": "Användarnamn",
+          "password": "Lösenord",
+          "api_key": "API-nyckel"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Kunde inte ansluta till WUD. Kontrollera värd, port och autentiseringsuppgifter.",
+      "invalid_auth": "WUD avvisade autentiseringsuppgifterna. Kontrollera användarnamn/lösenord eller API-nyckel."
+    },
+    "abort": {
+      "already_configured": "Den här WUD-instansen är redan konfigurerad.",
+      "reauth_successful": "Omautentisering lyckades."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WUD Monitor-inställningar",
+        "data": {
+          "host": "Värd",
+          "port": "Port",
+          "instance_name": "Instansnamn",
+          "poll_interval": "Pollningsintervall (minuter)",
+          "auth_method": "Autentiseringsmetod"
+        },
+        "data_description": {
+          "auth_method": "Välj hur du vill autentisera mot WUD-API:et. Välj 'Ingen' om din WUD-instans inte har någon autentisering konfigurerad."
+        }
+      },
+      "basic_auth": {
+        "title": "Basic Auth-uppgifter",
+        "description": "Ange användarnamnet och lösenordet som är konfigurerat i WUD.",
+        "data": {
+          "username": "Användarnamn",
+          "password": "Lösenord"
+        }
+      },
+      "api_key": {
+        "title": "API-nyckel",
+        "description": "Ange API-nyckeln som är konfigurerad i WUD. Den skickas som en Bearer-token.",
+        "data": {
+          "api_key": "API-nyckel"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Kunde inte ansluta till WUD. Kontrollera värd, port och autentiseringsuppgifter.",
+      "invalid_auth": "WUD avvisade autentiseringsuppgifterna. Kontrollera användarnamn/lösenord eller API-nyckel."
+    }
+  },
+  "selector": {
+    "auth_method": {
+      "options": {
+        "none": "Ingen",
+        "basic": "Basic Auth (användarnamn + lösenord)",
+        "api_key": "API-nyckel (Bearer-token)"
+      }
+    }
+  }
+}
