@@ -143,6 +143,7 @@ async def async_setup_entry(
 
     # Controller-level sensors
     entities.append(WUDUpdateCountSensor(coordinator, entry, instance_name))
+    entities.append(WUDErrorCountSensor(coordinator, entry, instance_name))
     entities.append(WUDTotalCountSensor(coordinator, entry, instance_name))
     entities.append(WUDLastPollSensor(coordinator, entry, instance_name))
 
@@ -203,6 +204,38 @@ class WUDUpdateCountSensor(WUDControllerSensorBase):
             if c.get("updateAvailable", False)
         ]
         return {"containers": updates}
+
+
+class WUDErrorCountSensor(WUDControllerSensorBase):
+    """Sensor reporting the number of containers WUD reported an error for
+    (e.g. registry rate limit, auth failure) — a controller-level counterpart
+    to the per-container `error` attribute, for dashboard/automation use
+    without attribute-templating."""
+
+    def __init__(self, coordinator, entry, instance_name) -> None:
+        super().__init__(coordinator, entry, instance_name, "error_count")
+        self._attr_name = f"WUD @ {instance_name} Containers with Errors"
+        self._attr_icon = "mdi:alert-circle-outline"
+        self._attr_native_unit_of_measurement = "containers"
+
+    @property
+    def native_value(self) -> int:
+        """Return the count of containers WUD reported an error for."""
+        if not self.coordinator.data:
+            return 0
+        return sum(1 for c in self.coordinator.data if _get_error_message(c))
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return a list of containers WUD reported an error for."""
+        if not self.coordinator.data:
+            return {}
+        errors = [
+            {"name": c.get("name"), "error": _get_error_message(c)}
+            for c in self.coordinator.data
+            if _get_error_message(c)
+        ]
+        return {"containers": errors}
 
 
 class WUDTotalCountSensor(WUDControllerSensorBase):
