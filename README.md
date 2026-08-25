@@ -126,6 +126,7 @@ Settings can be changed later via the integration's **Configure** button, includ
 | Entity | Type | Description |
 |---|---|---|
 | Containers with Updates | Sensor | Number of containers that have an update available |
+| Containers with Errors | Sensor | Number of containers WUD reported an error for (e.g. registry rate limit, registry auth failure) — a controller-level count, so a single dashboard tile or automation trigger covers your whole instance without templating |
 | Monitored Containers | Sensor | Total number of containers WUD is watching |
 | Last Poll | Sensor | When HA last successfully fetched data from WUD |
 | Force Scan All | Button | Triggers `POST /api/containers/watch` to re-check all containers |
@@ -138,6 +139,7 @@ One device per Docker Compose project. Linked to the Controller device via `via_
 | Entity | Type | Description |
 |---|---|---|
 | {container} Update Available | Sensor | Per-container update status |
+| {container} Problem | Binary sensor (`problem`) | On when WUD reports an error for this specific container — automate directly on "this container is broken" instead of templating the sensor's `error` attribute |
 | Force Scan | Button | Scans each container in the project individually |
 
 ### Per-container sensor attributes
@@ -182,6 +184,12 @@ Check the poll interval in the integration settings. You can also press the **Fo
 ---
 
 ## Changelog
+
+### 2.6
+**Error visibility as first-class entities** — [#10](https://github.com/johro897/wud-monitor/issues/10), [#11](https://github.com/johro897/wud-monitor/issues/11)
+- New **Containers with Errors** sensor on the Controller device — a controller-level count of containers WUD reported an error for, same pattern as the existing Containers with Updates sensor
+- New **{container} Problem** binary sensor (`device_class: problem`) per container — lets you automate directly on "this container is broken" instead of templating the existing per-container `error` attribute
+- Both read from WUD data already being polled — no new API calls, no config changes needed
 
 ### 2.5
 **Language support** — [#13](https://github.com/johro897/wud-monitor/issues/13)
