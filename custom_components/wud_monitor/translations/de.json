@@ -1,0 +1,102 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mit What's Up Docker verbinden",
+        "description": "Geben Sie die Verbindungsdetails für Ihre WUD-Instanz ein.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "instance_name": "Instanzname",
+          "poll_interval": "Abfrageintervall (Minuten)",
+          "auth_method": "Authentifizierungsmethode"
+        },
+        "data_description": {
+          "auth_method": "Wählen Sie, wie Sie sich beim WUD-API authentifizieren möchten. Wählen Sie 'Keine', wenn für Ihre WUD-Instanz keine Authentifizierung konfiguriert ist."
+        }
+      },
+      "basic_auth": {
+        "title": "Basic-Auth-Zugangsdaten",
+        "description": "Geben Sie den in WUD konfigurierten Benutzernamen und das Passwort ein.",
+        "data": {
+          "username": "Benutzername",
+          "password": "Passwort"
+        }
+      },
+      "api_key": {
+        "title": "API-Schlüssel",
+        "description": "Geben Sie den in WUD konfigurierten API-Schlüssel ein. Er wird als Bearer-Token gesendet.",
+        "data": {
+          "api_key": "API-Schlüssel"
+        }
+      },
+      "reauth_confirm": {
+        "title": "WUD Monitor erneut authentifizieren",
+        "description": "WUD hat die gespeicherten Zugangsdaten für diese Instanz abgelehnt — geben Sie aktualisierte Daten ein.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "instance_name": "Instanzname",
+          "poll_interval": "Abfrageintervall (Minuten)",
+          "auth_method": "Authentifizierungsmethode",
+          "username": "Benutzername",
+          "password": "Passwort",
+          "api_key": "API-Schlüssel"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zu WUD nicht möglich. Überprüfen Sie Host, Port und Zugangsdaten.",
+      "invalid_auth": "WUD hat die Zugangsdaten abgelehnt. Überprüfen Sie Benutzername/Passwort oder den API-Schlüssel."
+    },
+    "abort": {
+      "already_configured": "Diese WUD-Instanz ist bereits konfiguriert.",
+      "reauth_successful": "Erneute Authentifizierung erfolgreich."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WUD Monitor-Einstellungen",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "instance_name": "Instanzname",
+          "poll_interval": "Abfrageintervall (Minuten)",
+          "auth_method": "Authentifizierungsmethode"
+        },
+        "data_description": {
+          "auth_method": "Wählen Sie, wie Sie sich beim WUD-API authentifizieren möchten. Wählen Sie 'Keine', wenn für Ihre WUD-Instanz keine Authentifizierung konfiguriert ist."
+        }
+      },
+      "basic_auth": {
+        "title": "Basic-Auth-Zugangsdaten",
+        "description": "Geben Sie den in WUD konfigurierten Benutzernamen und das Passwort ein.",
+        "data": {
+          "username": "Benutzername",
+          "password": "Passwort"
+        }
+      },
+      "api_key": {
+        "title": "API-Schlüssel",
+        "description": "Geben Sie den in WUD konfigurierten API-Schlüssel ein. Er wird als Bearer-Token gesendet.",
+        "data": {
+          "api_key": "API-Schlüssel"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zu WUD nicht möglich. Überprüfen Sie Host, Port und Zugangsdaten.",
+      "invalid_auth": "WUD hat die Zugangsdaten abgelehnt. Überprüfen Sie Benutzername/Passwort oder den API-Schlüssel."
+    }
+  },
+  "selector": {
+    "auth_method": {
+      "options": {
+        "none": "Keine",
+        "basic": "Basic Auth (Benutzername + Passwort)",
+        "api_key": "API-Schlüssel (Bearer-Token)"
+      }
+    }
+  }
+}

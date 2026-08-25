@@ -16,6 +16,7 @@ A Home Assistant integration for [What's Up Docker (WUD)](https://github.com/get
 - **Re-deploy safe** — sensor identity is based on container name and watcher, not the Docker container ID which changes on every redeploy
 - **Configurable polling** — set how often HA polls WUD (default: 15 minutes)
 - **Multi-instance support** — add multiple WUD instances, each gets its own devices and sensors
+- **Multi-language config flow** — English (default), Swedish, German, and French
 
 ---
 
@@ -181,6 +182,11 @@ Check the poll interval in the integration settings. You can also press the **Fo
 ---
 
 ## Changelog
+
+### 2.5
+**Language support** — [#13](https://github.com/johro897/wud-monitor/issues/13)
+- Added `translations/sv.json`, `translations/de.json`, and `translations/fr.json` — the config flow, options flow, and auth-method selector now render in Swedish, German, and French, not just English
+- `strings.json`/`translations/en.json` are unchanged; falls back to English for any other HA language
 
 ### 2.4
 **Security hardening** — [#7](https://github.com/johro897/wud-monitor/issues/7)

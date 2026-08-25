@@ -1,0 +1,102 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Se connecter à What's Up Docker",
+        "description": "Entrez les informations de connexion pour votre instance WUD.",
+        "data": {
+          "host": "Hôte",
+          "port": "Port",
+          "instance_name": "Nom de l'instance",
+          "poll_interval": "Intervalle d'interrogation (minutes)",
+          "auth_method": "Méthode d'authentification"
+        },
+        "data_description": {
+          "auth_method": "Choisissez comment vous authentifier auprès de l'API WUD. Sélectionnez « Aucune » si votre instance WUD n'a pas d'authentification configurée."
+        }
+      },
+      "basic_auth": {
+        "title": "Identifiants Basic Auth",
+        "description": "Entrez le nom d'utilisateur et le mot de passe configurés dans WUD.",
+        "data": {
+          "username": "Nom d'utilisateur",
+          "password": "Mot de passe"
+        }
+      },
+      "api_key": {
+        "title": "Clé API",
+        "description": "Entrez la clé API configurée dans WUD. Elle sera envoyée comme jeton Bearer.",
+        "data": {
+          "api_key": "Clé API"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Réauthentifier WUD Monitor",
+        "description": "WUD a rejeté les identifiants enregistrés pour cette instance — entrez des identifiants à jour.",
+        "data": {
+          "host": "Hôte",
+          "port": "Port",
+          "instance_name": "Nom de l'instance",
+          "poll_interval": "Intervalle d'interrogation (minutes)",
+          "auth_method": "Méthode d'authentification",
+          "username": "Nom d'utilisateur",
+          "password": "Mot de passe",
+          "api_key": "Clé API"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Impossible de se connecter à WUD. Vérifiez l'hôte, le port et les identifiants.",
+      "invalid_auth": "WUD a rejeté les identifiants. Vérifiez le nom d'utilisateur/mot de passe ou la clé API."
+    },
+    "abort": {
+      "already_configured": "Cette instance WUD est déjà configurée.",
+      "reauth_successful": "Réauthentification réussie."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Paramètres WUD Monitor",
+        "data": {
+          "host": "Hôte",
+          "port": "Port",
+          "instance_name": "Nom de l'instance",
+          "poll_interval": "Intervalle d'interrogation (minutes)",
+          "auth_method": "Méthode d'authentification"
+        },
+        "data_description": {
+          "auth_method": "Choisissez comment vous authentifier auprès de l'API WUD. Sélectionnez « Aucune » si votre instance WUD n'a pas d'authentification configurée."
+        }
+      },
+      "basic_auth": {
+        "title": "Identifiants Basic Auth",
+        "description": "Entrez le nom d'utilisateur et le mot de passe configurés dans WUD.",
+        "data": {
+          "username": "Nom d'utilisateur",
+          "password": "Mot de passe"
+        }
+      },
+      "api_key": {
+        "title": "Clé API",
+        "description": "Entrez la clé API configurée dans WUD. Elle sera envoyée comme jeton Bearer.",
+        "data": {
+          "api_key": "Clé API"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Impossible de se connecter à WUD. Vérifiez l'hôte, le port et les identifiants.",
+      "invalid_auth": "WUD a rejeté les identifiants. Vérifiez le nom d'utilisateur/mot de passe ou la clé API."
+    }
+  },
+  "selector": {
+    "auth_method": {
+      "options": {
+        "none": "Aucune",
+        "basic": "Basic Auth (nom d'utilisateur + mot de passe)",
+        "api_key": "Clé API (jeton Bearer)"
+      }
+    }
+  }
+}
