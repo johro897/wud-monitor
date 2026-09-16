@@ -7,11 +7,15 @@
         "data": {
           "host": "Host",
           "port": "Port",
+          "use_ssl": "Use HTTPS",
+          "verify_ssl": "Verify SSL certificate",
           "instance_name": "Instance name",
           "poll_interval": "Poll interval (minutes)",
           "auth_method": "Authentication method"
         },
         "data_description": {
+          "use_ssl": "Enable if your WUD instance is served over HTTPS.",
+          "verify_ssl": "Only applies to HTTPS. Turn this off if WUD uses a self-signed certificate.",
           "auth_method": "Choose how to authenticate with the WUD API. Select 'None' if your WUD instance has no authentication configured."
         }
       },
@@ -36,17 +40,23 @@
         "data": {
           "host": "Host",
           "port": "Port",
+          "use_ssl": "Use HTTPS",
+          "verify_ssl": "Verify SSL certificate",
           "instance_name": "Instance name",
           "poll_interval": "Poll interval (minutes)",
           "auth_method": "Authentication method",
           "username": "Username",
           "password": "Password",
           "api_key": "API key"
+        },
+        "data_description": {
+          "use_ssl": "Enable if your WUD instance is served over HTTPS.",
+          "verify_ssl": "Only applies to HTTPS. Turn this off if WUD uses a self-signed certificate."
         }
       }
     },
     "error": {
-      "cannot_connect": "Unable to connect to WUD. Check the host, port and credentials.",
+      "cannot_connect": "Unable to connect to WUD. Check the host, port, HTTPS/certificate settings and credentials.",
       "invalid_auth": "WUD rejected the credentials. Check the username/password or API key."
     },
     "abort": {
@@ -61,11 +71,15 @@
         "data": {
           "host": "Host",
           "port": "Port",
+          "use_ssl": "Use HTTPS",
+          "verify_ssl": "Verify SSL certificate",
           "instance_name": "Instance name",
           "poll_interval": "Poll interval (minutes)",
           "auth_method": "Authentication method"
         },
         "data_description": {
+          "use_ssl": "Enable if your WUD instance is served over HTTPS.",
+          "verify_ssl": "Only applies to HTTPS. Turn this off if WUD uses a self-signed certificate.",
           "auth_method": "Choose how to authenticate with the WUD API. Select 'None' if your WUD instance has no authentication configured."
         }
       },
@@ -86,7 +100,7 @@
       }
     },
     "error": {
-      "cannot_connect": "Unable to connect to WUD. Check the host, port and credentials.",
+      "cannot_connect": "Unable to connect to WUD. Check the host, port, HTTPS/certificate settings and credentials.",
       "invalid_auth": "WUD rejected the credentials. Check the username/password or API key."
     }
   },

@@ -3,8 +3,9 @@ import logging
 import aiohttp
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import selector
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .const import (
     AUTH_METHOD_NONE,
     AUTH_METHOD_BASIC,
@@ -17,11 +18,16 @@ from .const import (
     CONF_POLL_INTERVAL,
     CONF_PORT,
     CONF_USERNAME,
+    CONF_USE_SSL,
+    CONF_VERIFY_SSL,
     DEFAULT_INSTANCE_NAME,
     DEFAULT_POLL_INTERVAL,
     DEFAULT_PORT,
+    DEFAULT_USE_SSL,
+    DEFAULT_VERIFY_SSL,
     DOMAIN,
 )
+from .helpers import build_base_url
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,6 +42,13 @@ def _build_connection_schema(defaults: dict) -> vol.Schema:
             vol.Required(
                 CONF_PORT, default=defaults.get(CONF_PORT, DEFAULT_PORT)
             ): vol.All(int, vol.Range(min=1, max=65535)),
+            vol.Required(
+                CONF_USE_SSL, default=defaults.get(CONF_USE_SSL, DEFAULT_USE_SSL)
+            ): bool,
+            vol.Required(
+                CONF_VERIFY_SSL,
+                default=defaults.get(CONF_VERIFY_SSL, DEFAULT_VERIFY_SSL),
+            ): bool,
             vol.Required(
                 CONF_INSTANCE_NAME,
                 default=defaults.get(CONF_INSTANCE_NAME, DEFAULT_INSTANCE_NAME),
@@ -97,31 +110,33 @@ def _build_headers(data: dict) -> dict:
     return {}
 
 
-async def _test_connection(data: dict) -> str:
+async def _test_connection(hass: HomeAssistant, data: dict) -> str:
     """Test that we can reach the WUD API with the given config.
 
     Returns "ok", "invalid_auth" (WUD reachable but rejected the
-    credentials), or "cannot_connect" (host unreachable, timeout, or any
-    other non-200/401 response).
+    credentials), or "cannot_connect" (host unreachable, timeout, TLS
+    verification failure, or any other non-200/401 response).
     """
-    host = data[CONF_HOST]
-    port = data[CONF_PORT]
-    url = f"http://{host}:{port}/api/containers"
+    use_ssl = data.get(CONF_USE_SSL, DEFAULT_USE_SSL)
+    base_url = build_base_url(data[CONF_HOST], data[CONF_PORT], use_ssl)
+    url = f"{base_url}/api/containers"
+    # TLS verification only matters for https.
+    verify_ssl = data.get(CONF_VERIFY_SSL, DEFAULT_VERIFY_SSL) or not use_ssl
     auth = _build_auth(data)
     headers = _build_headers(data)
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                url,
-                auth=auth,
-                headers=headers,
-                timeout=aiohttp.ClientTimeout(total=5),
-            ) as response:
-                if response.status == 200:
-                    return "ok"
-                if response.status == 401:
-                    return "invalid_auth"
-                return "cannot_connect"
+        session = async_get_clientsession(hass, verify_ssl=verify_ssl)
+        async with session.get(
+            url,
+            auth=auth,
+            headers=headers,
+            timeout=aiohttp.ClientTimeout(total=5),
+        ) as response:
+            if response.status == 200:
+                return "ok"
+            if response.status == 401:
+                return "invalid_auth"
+            return "cannot_connect"
     except Exception:  # noqa: BLE001
         return "cannot_connect"
 
@@ -195,7 +210,7 @@ class WUDMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if errors is None:
             errors = {}
 
-        result = await _test_connection(self._data)
+        result = await _test_connection(self.hass, self._data)
         if result != "ok":
             errors["base"] = "invalid_auth" if result == "invalid_auth" else "cannot_connect"
             # Return to the auth step so the user can correct credentials
@@ -235,7 +250,7 @@ class WUDMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             self._data.update(user_input)
-            result = await _test_connection(self._data)
+            result = await _test_connection(self.hass, self._data)
             if result == "ok":
                 reauth_entry = self.hass.config_entries.async_get_entry(
                     self.context["entry_id"]
@@ -243,7 +258,9 @@ class WUDMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self.hass.config_entries.async_update_entry(
                     reauth_entry, data=self._data
                 )
-                await self.hass.config_entries.async_reload(reauth_entry.entry_id)
+                # No manual reload here — the update listener registered in
+                # __init__.py now handles it automatically whenever entry
+                # data changes, including this one.
                 return self.async_abort(reason="reauth_successful")
             errors["base"] = "invalid_auth" if result == "invalid_auth" else "cannot_connect"
 
@@ -329,7 +346,7 @@ class WUDMonitorOptionsFlow(config_entries.OptionsFlow):
         if errors is None:
             errors = {}
 
-        result = await _test_connection(self._data)
+        result = await _test_connection(self.hass, self._data)
         if result != "ok":
             errors["base"] = "invalid_auth" if result == "invalid_auth" else "cannot_connect"
             auth_method = self._data.get(CONF_AUTH_METHOD, AUTH_METHOD_NONE)

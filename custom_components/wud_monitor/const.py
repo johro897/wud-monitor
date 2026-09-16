@@ -5,6 +5,8 @@ DOMAIN = "wud_monitor"
 # Config entry keys
 CONF_HOST          = "host"
 CONF_PORT          = "port"
+CONF_USE_SSL       = "use_ssl"
+CONF_VERIFY_SSL    = "verify_ssl"
 CONF_INSTANCE_NAME = "instance_name"
 CONF_POLL_INTERVAL = "poll_interval"
 
@@ -20,6 +22,8 @@ AUTH_METHOD_API_KEY = "api_key"
 
 # Defaults
 DEFAULT_PORT          = 3000
+DEFAULT_USE_SSL       = False
+DEFAULT_VERIFY_SSL    = True
 DEFAULT_POLL_INTERVAL = 15  # minutes
 DEFAULT_INSTANCE_NAME = "WUD"
 

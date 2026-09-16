@@ -7,11 +7,15 @@
         "data": {
           "host": "Host",
           "port": "Port",
+          "use_ssl": "HTTPS verwenden",
+          "verify_ssl": "SSL-Zertifikat überprüfen",
           "instance_name": "Instanzname",
           "poll_interval": "Abfrageintervall (Minuten)",
           "auth_method": "Authentifizierungsmethode"
         },
         "data_description": {
+          "use_ssl": "Aktivieren, wenn Ihre WUD-Instanz über HTTPS erreichbar ist.",
+          "verify_ssl": "Gilt nur für HTTPS. Deaktivieren, wenn WUD ein selbstsigniertes Zertifikat verwendet.",
           "auth_method": "Wählen Sie, wie Sie sich beim WUD-API authentifizieren möchten. Wählen Sie 'Keine', wenn für Ihre WUD-Instanz keine Authentifizierung konfiguriert ist."
         }
       },
@@ -36,17 +40,23 @@
         "data": {
           "host": "Host",
           "port": "Port",
+          "use_ssl": "HTTPS verwenden",
+          "verify_ssl": "SSL-Zertifikat überprüfen",
           "instance_name": "Instanzname",
           "poll_interval": "Abfrageintervall (Minuten)",
           "auth_method": "Authentifizierungsmethode",
           "username": "Benutzername",
           "password": "Passwort",
           "api_key": "API-Schlüssel"
+        },
+        "data_description": {
+          "use_ssl": "Aktivieren, wenn Ihre WUD-Instanz über HTTPS erreichbar ist.",
+          "verify_ssl": "Gilt nur für HTTPS. Deaktivieren, wenn WUD ein selbstsigniertes Zertifikat verwendet."
         }
       }
     },
     "error": {
-      "cannot_connect": "Verbindung zu WUD nicht möglich. Überprüfen Sie Host, Port und Zugangsdaten.",
+      "cannot_connect": "Verbindung zu WUD nicht möglich. Überprüfen Sie Host, Port, HTTPS-/Zertifikatseinstellungen und Zugangsdaten.",
       "invalid_auth": "WUD hat die Zugangsdaten abgelehnt. Überprüfen Sie Benutzername/Passwort oder den API-Schlüssel."
     },
     "abort": {
@@ -61,11 +71,15 @@
         "data": {
           "host": "Host",
           "port": "Port",
+          "use_ssl": "HTTPS verwenden",
+          "verify_ssl": "SSL-Zertifikat überprüfen",
           "instance_name": "Instanzname",
           "poll_interval": "Abfrageintervall (Minuten)",
           "auth_method": "Authentifizierungsmethode"
         },
         "data_description": {
+          "use_ssl": "Aktivieren, wenn Ihre WUD-Instanz über HTTPS erreichbar ist.",
+          "verify_ssl": "Gilt nur für HTTPS. Deaktivieren, wenn WUD ein selbstsigniertes Zertifikat verwendet.",
           "auth_method": "Wählen Sie, wie Sie sich beim WUD-API authentifizieren möchten. Wählen Sie 'Keine', wenn für Ihre WUD-Instanz keine Authentifizierung konfiguriert ist."
         }
       },
@@ -86,7 +100,7 @@
       }
     },
     "error": {
-      "cannot_connect": "Verbindung zu WUD nicht möglich. Überprüfen Sie Host, Port und Zugangsdaten.",
+      "cannot_connect": "Verbindung zu WUD nicht möglich. Überprüfen Sie Host, Port, HTTPS-/Zertifikatseinstellungen und Zugangsdaten.",
       "invalid_auth": "WUD hat die Zugangsdaten abgelehnt. Überprüfen Sie Benutzername/Passwort oder den API-Schlüssel."
     }
   },

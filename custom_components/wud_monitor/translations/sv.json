@@ -7,11 +7,15 @@
         "data": {
           "host": "Värd",
           "port": "Port",
+          "use_ssl": "Använd HTTPS",
+          "verify_ssl": "Verifiera SSL-certifikat",
           "instance_name": "Instansnamn",
           "poll_interval": "Pollningsintervall (minuter)",
           "auth_method": "Autentiseringsmetod"
         },
         "data_description": {
+          "use_ssl": "Aktivera om din WUD-instans nås via HTTPS.",
+          "verify_ssl": "Gäller endast HTTPS. Stäng av om WUD använder ett självsignerat certifikat.",
           "auth_method": "Välj hur du vill autentisera mot WUD-API:et. Välj 'Ingen' om din WUD-instans inte har någon autentisering konfigurerad."
         }
       },
@@ -36,17 +40,23 @@
         "data": {
           "host": "Värd",
           "port": "Port",
+          "use_ssl": "Använd HTTPS",
+          "verify_ssl": "Verifiera SSL-certifikat",
           "instance_name": "Instansnamn",
           "poll_interval": "Pollningsintervall (minuter)",
           "auth_method": "Autentiseringsmetod",
           "username": "Användarnamn",
           "password": "Lösenord",
           "api_key": "API-nyckel"
+        },
+        "data_description": {
+          "use_ssl": "Aktivera om din WUD-instans nås via HTTPS.",
+          "verify_ssl": "Gäller endast HTTPS. Stäng av om WUD använder ett självsignerat certifikat."
         }
       }
     },
     "error": {
-      "cannot_connect": "Kunde inte ansluta till WUD. Kontrollera värd, port och autentiseringsuppgifter.",
+      "cannot_connect": "Det gick inte att ansluta till WUD. Kontrollera värd, port, HTTPS-/certifikatinställningar och inloggningsuppgifter.",
       "invalid_auth": "WUD avvisade autentiseringsuppgifterna. Kontrollera användarnamn/lösenord eller API-nyckel."
     },
     "abort": {
@@ -61,11 +71,15 @@
         "data": {
           "host": "Värd",
           "port": "Port",
+          "use_ssl": "Använd HTTPS",
+          "verify_ssl": "Verifiera SSL-certifikat",
           "instance_name": "Instansnamn",
           "poll_interval": "Pollningsintervall (minuter)",
           "auth_method": "Autentiseringsmetod"
         },
         "data_description": {
+          "use_ssl": "Aktivera om din WUD-instans nås via HTTPS.",
+          "verify_ssl": "Gäller endast HTTPS. Stäng av om WUD använder ett självsignerat certifikat.",
           "auth_method": "Välj hur du vill autentisera mot WUD-API:et. Välj 'Ingen' om din WUD-instans inte har någon autentisering konfigurerad."
         }
       },
@@ -86,7 +100,7 @@
       }
     },
     "error": {
-      "cannot_connect": "Kunde inte ansluta till WUD. Kontrollera värd, port och autentiseringsuppgifter.",
+      "cannot_connect": "Det gick inte att ansluta till WUD. Kontrollera värd, port, HTTPS-/certifikatinställningar och inloggningsuppgifter.",
       "invalid_auth": "WUD avvisade autentiseringsuppgifterna. Kontrollera användarnamn/lösenord eller API-nyckel."
     }
   },

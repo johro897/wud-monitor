@@ -7,11 +7,15 @@
         "data": {
           "host": "Hôte",
           "port": "Port",
+          "use_ssl": "Utiliser HTTPS",
+          "verify_ssl": "Vérifier le certificat SSL",
           "instance_name": "Nom de l'instance",
           "poll_interval": "Intervalle d'interrogation (minutes)",
           "auth_method": "Méthode d'authentification"
         },
         "data_description": {
+          "use_ssl": "Activez cette option si votre instance WUD est accessible en HTTPS.",
+          "verify_ssl": "S'applique uniquement à HTTPS. Désactivez cette option si WUD utilise un certificat auto-signé.",
           "auth_method": "Choisissez comment vous authentifier auprès de l'API WUD. Sélectionnez « Aucune » si votre instance WUD n'a pas d'authentification configurée."
         }
       },
@@ -36,17 +40,23 @@
         "data": {
           "host": "Hôte",
           "port": "Port",
+          "use_ssl": "Utiliser HTTPS",
+          "verify_ssl": "Vérifier le certificat SSL",
           "instance_name": "Nom de l'instance",
           "poll_interval": "Intervalle d'interrogation (minutes)",
           "auth_method": "Méthode d'authentification",
           "username": "Nom d'utilisateur",
           "password": "Mot de passe",
           "api_key": "Clé API"
+        },
+        "data_description": {
+          "use_ssl": "Activez cette option si votre instance WUD est accessible en HTTPS.",
+          "verify_ssl": "S'applique uniquement à HTTPS. Désactivez cette option si WUD utilise un certificat auto-signé."
         }
       }
     },
     "error": {
-      "cannot_connect": "Impossible de se connecter à WUD. Vérifiez l'hôte, le port et les identifiants.",
+      "cannot_connect": "Impossible de se connecter à WUD. Vérifiez l'hôte, le port, les paramètres HTTPS/certificat et les identifiants.",
       "invalid_auth": "WUD a rejeté les identifiants. Vérifiez le nom d'utilisateur/mot de passe ou la clé API."
     },
     "abort": {
@@ -61,11 +71,15 @@
         "data": {
           "host": "Hôte",
           "port": "Port",
+          "use_ssl": "Utiliser HTTPS",
+          "verify_ssl": "Vérifier le certificat SSL",
           "instance_name": "Nom de l'instance",
           "poll_interval": "Intervalle d'interrogation (minutes)",
           "auth_method": "Méthode d'authentification"
         },
         "data_description": {
+          "use_ssl": "Activez cette option si votre instance WUD est accessible en HTTPS.",
+          "verify_ssl": "S'applique uniquement à HTTPS. Désactivez cette option si WUD utilise un certificat auto-signé.",
           "auth_method": "Choisissez comment vous authentifier auprès de l'API WUD. Sélectionnez « Aucune » si votre instance WUD n'a pas d'authentification configurée."
         }
       },
@@ -86,7 +100,7 @@
       }
     },
     "error": {
-      "cannot_connect": "Impossible de se connecter à WUD. Vérifiez l'hôte, le port et les identifiants.",
+      "cannot_connect": "Impossible de se connecter à WUD. Vérifiez l'hôte, le port, les paramètres HTTPS/certificat et les identifiants.",
       "invalid_auth": "WUD a rejeté les identifiants. Vérifiez le nom d'utilisateur/mot de passe ou la clé API."
     }
   },
