@@ -5,6 +5,7 @@ from datetime import timedelta
 import aiohttp
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
@@ -15,8 +16,11 @@ from .const import (
     CONF_API_KEY,
     CONF_PASSWORD,
     CONF_USERNAME,
+    DEFAULT_USE_SSL,
+    DEFAULT_VERIFY_SSL,
     DOMAIN,
 )
+from .helpers import build_base_url
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,11 +35,17 @@ class WUDCoordinator(DataUpdateCoordinator):
         port: int,
         poll_interval: int,
         auth_config: dict | None = None,
+        use_ssl: bool = DEFAULT_USE_SSL,
+        verify_ssl: bool = DEFAULT_VERIFY_SSL,
     ) -> None:
         """Initialize the coordinator."""
         self.host = host
         self.port = port
-        self._base_url = f"http://{host}:{port}"
+        self.use_ssl = use_ssl
+        # TLS verification only matters for https; an http connection always
+        # uses the verifying (default) shared session.
+        self.verify_ssl = verify_ssl or not use_ssl
+        self._base_url = build_base_url(host, port, use_ssl)
         self._auth_config = auth_config or {}
         self.last_poll_time: object = None
         self._container_lookup_data: object = None  # identity of the data this lookup was built from
@@ -89,6 +99,15 @@ class WUDCoordinator(DataUpdateCoordinator):
             "headers": self._get_headers(),
         }
 
+    def _session(self) -> aiohttp.ClientSession:
+        """Return Home Assistant's shared aiohttp session.
+
+        HA keeps one session per verify_ssl setting and builds the SSL context
+        outside the event loop, so self-signed certificates can be accepted
+        without blocking calls inside the loop.
+        """
+        return async_get_clientsession(self.hass, verify_ssl=self.verify_ssl)
+
     # ── API calls ─────────────────────────────────────────────────────────────
 
     async def _async_update_data(self) -> list[dict]:
@@ -97,22 +116,21 @@ class WUDCoordinator(DataUpdateCoordinator):
 
         url = f"{self._base_url}{API_CONTAINERS}"
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    url,
-                    timeout=aiohttp.ClientTimeout(total=15),
-                    **self._session_kwargs(),
-                ) as response:
-                    if response.status == 401:
-                        raise ConfigEntryAuthFailed(
-                            "WUD API returned 401 Unauthorized — check authentication settings"
-                        )
-                    if response.status != 200:
-                        raise UpdateFailed(f"WUD API returned HTTP {response.status}")
-                    data = await response.json()
-                    result = data if isinstance(data, list) else data.get("items", [])
-                    self.last_poll_time = datetime.now(timezone.utc)
-                    return result
+            async with self._session().get(
+                url,
+                timeout=aiohttp.ClientTimeout(total=15),
+                **self._session_kwargs(),
+            ) as response:
+                if response.status == 401:
+                    raise ConfigEntryAuthFailed(
+                        "WUD API returned 401 Unauthorized — check authentication settings"
+                    )
+                if response.status != 200:
+                    raise UpdateFailed(f"WUD API returned HTTP {response.status}")
+                data = await response.json()
+                result = data if isinstance(data, list) else data.get("items", [])
+                self.last_poll_time = datetime.now(timezone.utc)
+                return result
         except aiohttp.ClientError as err:
             raise UpdateFailed(
                 f"Error communicating with WUD at {self._base_url}: {err}"
@@ -124,13 +142,12 @@ class WUDCoordinator(DataUpdateCoordinator):
 
         url = f"{self._base_url}{API_CONTAINERS_WATCH}"
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    url,
-                    timeout=aiohttp.ClientTimeout(total=15),
-                    **self._session_kwargs(),
-                ) as response:
-                    return response.status in (200, 202, 204)
+            async with self._session().post(
+                url,
+                timeout=aiohttp.ClientTimeout(total=15),
+                **self._session_kwargs(),
+            ) as response:
+                return response.status in (200, 202, 204)
         except aiohttp.ClientError as err:
             _LOGGER.error("Failed to trigger WUD scan all: %s", err)
             return False
@@ -141,13 +158,12 @@ class WUDCoordinator(DataUpdateCoordinator):
 
         url = f"{self._base_url}{API_CONTAINER_WATCH.format(container_id=container_id)}"
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    url,
-                    timeout=aiohttp.ClientTimeout(total=15),
-                    **self._session_kwargs(),
-                ) as response:
-                    return response.status in (200, 202, 204)
+            async with self._session().post(
+                url,
+                timeout=aiohttp.ClientTimeout(total=15),
+                **self._session_kwargs(),
+            ) as response:
+                return response.status in (200, 202, 204)
         except aiohttp.ClientError as err:
             _LOGGER.error(
                 "Failed to trigger WUD scan for container %s: %s", container_id, err

@@ -13,6 +13,7 @@ A Home Assistant integration for [What's Up Docker (WUD)](https://github.com/get
 - **Force scan buttons** — trigger WUD to re-check updates for all containers, a specific compose project, or a single container
 - **Compose project grouping** — containers sharing a Docker Compose project are grouped under one HA device
 - **Authentication support** — connect to WUD instances protected by Basic Auth or API Key
+- **HTTPS support** — reach WUD over TLS, with optional certificate verification for self-signed certs
 - **Re-deploy safe** — sensor identity is based on container name and watcher, not the Docker container ID which changes on every redeploy
 - **Configurable polling** — set how often HA polls WUD (default: 15 minutes)
 - **Multi-instance support** — add multiple WUD instances, each gets its own devices and sensors
@@ -90,6 +91,8 @@ Go to **Settings → Devices & Services → Add Integration** and search for **W
 |---|---|---|
 | **Host** | IP address or hostname of your WUD instance | — |
 | **Port** | WUD web UI port | `3000` |
+| **Use HTTPS** | Connect to WUD over `https://` instead of `http://` | off |
+| **Verify SSL certificate** | Validate WUD's TLS certificate — turn off for self-signed certificates. Only applies when **Use HTTPS** is on | on |
 | **Instance name** | Friendly name shown as the Controller device in HA | `WUD` |
 | **Poll interval** | How often HA fetches data from WUD (minutes) | `15` |
 | **Authentication method** | How to authenticate with the WUD API | `None` |
@@ -115,7 +118,13 @@ WUD_AUTH_BASIC_JOHNDOE_PASSWORD: secret
 WUD_AUTH_BEARER_MYTOKEN_TOKEN: mysecrettoken
 ```
 
-Settings can be changed later via the integration's **Configure** button, including switching authentication method.
+Settings can be changed later via the integration's **Configure** button, including switching authentication method or protocol. The integration reloads itself when you save, so changes take effect immediately.
+
+### HTTPS
+
+If WUD sits behind a reverse proxy that terminates TLS (or serves TLS itself), enable **Use HTTPS** and set the port accordingly (usually `443`). Requests then go to `https://<host>:<port>/api/containers`.
+
+Keep **Verify SSL certificate** on whenever the certificate is issued by a CA Home Assistant trusts (Let's Encrypt, your own CA installed in HA). Turn it off only for self-signed or otherwise untrusted certificates — the connection stays encrypted, but it is no longer protected against an attacker impersonating the host, so prefer it only on a trusted local network.
 
 ---
 
@@ -167,6 +176,7 @@ One device per Docker Compose project. Linked to the Controller device via `via_
 Verify that the WUD API is reachable from Home Assistant:
 ```
 http://<wud_host>:<wud_port>/api/containers
+https://<wud_host>:<wud_port>/api/containers   # when Use HTTPS is enabled
 ```
 This should return a JSON array of your monitored containers. If you get a `401 Unauthorized` response, your WUD instance requires authentication — reconfigure the integration and select the correct auth method.
 
@@ -174,6 +184,11 @@ This should return a JSON array of your monitored containers. If you get a `401 
 - For Basic Auth: verify the username and password match the `WUD_AUTH_BASIC_*` environment variables in your WUD container
 - For API Key: verify the token matches `WUD_AUTH_BEARER_*_TOKEN` and that it is sent as a `Bearer` token
 - You can test from the command line: `curl -H "Authorization: Bearer <token>" http://<wud_host>:<wud_port>/api/containers`
+
+**HTTPS connection fails**
+- Check that the port matches the TLS listener (typically `443`, not `3000`)
+- A self-signed or otherwise untrusted certificate is reported as "cannot connect" — turn off **Verify SSL certificate** in the integration settings, or install the issuing CA in Home Assistant
+- Test from the command line: `curl -v https://<wud_host>:<wud_port>/api/containers` — `curl -k` succeeding while plain `curl` fails confirms a certificate-trust problem
 
 **Duplicate sensors after container redeploy**
 This integration uses `watcher + name` as the stable entity identity, not the Docker container ID. If you are upgrading from an older version that used container ID, delete the old `unavailable` entities manually under **Settings → Devices & Services**.
@@ -184,6 +199,14 @@ Check the poll interval in the integration settings. You can also press the **Fo
 ---
 
 ## Changelog
+
+### 2.6.1
+**HTTPS support** — [#17](https://github.com/johro897/wud-monitor/issues/17)
+- New **Use HTTPS** option in the config and options flow — WUD instances served over TLS (directly or behind a reverse proxy) can now be reached, instead of the connection being hardcoded to `http://`
+- New **Verify SSL certificate** option — on by default; turn it off to accept self-signed certificates. Applies to the connection test in the config flow as well as to all polling and Force Scan requests
+- Requests now use Home Assistant's shared aiohttp session instead of opening a new session per request — this is what makes the SSL context available without blocking the event loop, and reduces per-poll overhead
+- Saving the integration's settings now reloads the entry, so a changed host, protocol, auth method or poll interval takes effect immediately instead of at the next Home Assistant restart
+- Existing installations are unaffected: both new options default to the previous behaviour (plain HTTP, certificate verification on)
 
 ### 2.6
 **Error visibility as first-class entities** — [#10](https://github.com/johro897/wud-monitor/issues/10), [#11](https://github.com/johro897/wud-monitor/issues/11)
