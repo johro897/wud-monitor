@@ -6,8 +6,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 
 from .const import (
-    CONF_INSTANCE_NAME,
     CONF_HOST,
+    CONF_INSTANCE_NAME,
     CONF_POLL_INTERVAL,
     CONF_PORT,
     CONF_USE_SSL,
