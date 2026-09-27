@@ -66,7 +66,10 @@ class WUDContainerProblemBinarySensor(CoordinatorEntity, BinarySensorEntity):
         )
 
         self._attr_device_info = _build_container_device(
-            entry.entry_id, instance_name, container
+            entry.entry_id,
+            instance_name,
+            container,
+            coordinator.controller_device_id,
         )
 
     def _get_container(self) -> dict | None:

@@ -103,14 +103,19 @@ def _build_controller_device(entry_id: str, instance_name: str) -> dict:
     }
 
 
-def _build_container_device(entry_id: str, instance_name: str, container: dict) -> dict:
+def _build_container_device(
+    entry_id: str, instance_name: str, container: dict, controller_device_id: str
+) -> dict:
     """
     Build device info for a container or compose-project device.
     Containers sharing the same compose project are grouped under one device.
     Containers without a project fall under the Controller device.
+
+    `controller_device_id` is the Controller device's device-registry id
+    (registered in `async_setup_entry`), not its identifier — required by
+    `via_device_id`, see #19.
     """
     project = _get_compose_project(container)
-    controller_device_id = f"{entry_id}_{CONTROLLER_DEVICE_SUFFIX}"
 
     if project:
         return {
@@ -118,12 +123,12 @@ def _build_container_device(entry_id: str, instance_name: str, container: dict) 
             "name": f"{instance_name} – {project}",
             "manufacturer": "What's Up Docker",
             "model": "Docker Compose Project",
-            "via_device": (DOMAIN, controller_device_id),
+            "via_device_id": controller_device_id,
         }
 
     # No project — attach directly to the controller device
     return {
-        "identifiers": {(DOMAIN, controller_device_id)},
+        "identifiers": {(DOMAIN, f"{entry_id}_{CONTROLLER_DEVICE_SUFFIX}")},
         "name": f"WUD @ {instance_name}",
         "manufacturer": "What's Up Docker",
         "model": "Controller",
@@ -297,7 +302,10 @@ class WUDContainerSensor(CoordinatorEntity, SensorEntity):
         )
 
         self._attr_device_info = _build_container_device(
-            entry.entry_id, instance_name, container
+            entry.entry_id,
+            instance_name,
+            container,
+            coordinator.controller_device_id,
         )
 
     def _get_container(self) -> dict | None:
