@@ -23,7 +23,7 @@ A Home Assistant integration for [What's Up Docker (WUD)](https://github.com/get
 
 ## Requirements
 
-- Home Assistant 2024.1 or newer
+- Home Assistant 2026.8 or newer
 - [HACS](https://hacs.xyz/) installed
 - A running [What's Up Docker](https://github.com/getwud/wud) instance (tested with WUD 8.2+)
 
@@ -199,6 +199,13 @@ Check the poll interval in the integration settings. You can also press the **Fo
 ---
 
 ## Changelog
+
+### 2.6.2
+**Device registry deprecation fix** — [#19](https://github.com/johro897/wud-monitor/issues/19)
+- Compose project devices now link to the Controller device via `via_device_id` instead of the deprecated `via_device` parameter. Home Assistant 2026.9 logs a warning for the old form at startup (once per platform), and it stops working in Home Assistant 2027.8.0
+- The Controller device is now registered explicitly when the integration sets up, before its entities are added
+- **Minimum Home Assistant version is now 2026.8** (the first release with `via_device_id` in device info)
+- No changes to devices, entities or their IDs — dashboards and automations are unaffected
 
 ### 2.6.1
 **HTTPS support** — [#17](https://github.com/johro897/wud-monitor/issues/17)

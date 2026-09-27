@@ -2,5 +2,6 @@
   "name": "WUD Monitor",
   "render_readme": true,
   "zip_release": true,
-  "filename": "wud_monitor.zip"
+  "filename": "wud_monitor.zip",
+  "homeassistant": "2026.8.0"
 }

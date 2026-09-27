@@ -50,6 +50,9 @@ class WUDCoordinator(DataUpdateCoordinator):
         self.last_poll_time: object = None
         self._container_lookup_data: object = None  # identity of the data this lookup was built from
         self._container_lookup: dict[tuple[str, str], dict] = {}
+        # Device-registry id of the Controller device, set in async_setup_entry
+        # before platforms load; compose-project devices link to it (#19).
+        self.controller_device_id: str | None = None
 
         super().__init__(
             hass,

@@ -140,7 +140,10 @@ class WUDProjectScanButton(CoordinatorEntity, ButtonEntity):
 
         # Use the first container to build the project device info
         self._attr_device_info = _build_container_device(
-            entry.entry_id, instance_name, containers[0]
+            entry.entry_id,
+            instance_name,
+            containers[0],
+            coordinator.controller_device_id,
         )
 
     def _get_current_container_ids(self) -> list[str]:
@@ -181,7 +184,10 @@ class WUDContainerScanButton(CoordinatorEntity, ButtonEntity):
         )
         self._attr_icon = "mdi:refresh"
         self._attr_device_info = _build_container_device(
-            entry.entry_id, instance_name, container
+            entry.entry_id,
+            instance_name,
+            container,
+            coordinator.controller_device_id,
         )
 
     def _get_current_container_id(self) -> str | None:
