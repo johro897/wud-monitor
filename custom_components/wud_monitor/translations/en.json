@@ -57,7 +57,8 @@
     },
     "error": {
       "cannot_connect": "Unable to connect to WUD. Check the host, port, HTTPS/certificate settings and credentials.",
-      "invalid_auth": "WUD rejected the credentials. Check the username/password or API key."
+      "invalid_auth": "WUD rejected the credentials. Check the username/password or API key.",
+      "forbidden": "WUD accepted the credentials but they are not allowed to read containers. Use a user with role admin/rw/ro, or an API token with the 'read' or 'write' scope."
     },
     "abort": {
       "already_configured": "This WUD instance is already configured.",
@@ -101,7 +102,8 @@
     },
     "error": {
       "cannot_connect": "Unable to connect to WUD. Check the host, port, HTTPS/certificate settings and credentials.",
-      "invalid_auth": "WUD rejected the credentials. Check the username/password or API key."
+      "invalid_auth": "WUD rejected the credentials. Check the username/password or API key.",
+      "forbidden": "WUD accepted the credentials but they are not allowed to read containers. Use a user with role admin/rw/ro, or an API token with the 'read' or 'write' scope."
     }
   },
   "selector": {
