@@ -57,7 +57,8 @@
     },
     "error": {
       "cannot_connect": "Det gick inte att ansluta till WUD. Kontrollera värd, port, HTTPS-/certifikatinställningar och inloggningsuppgifter.",
-      "invalid_auth": "WUD avvisade autentiseringsuppgifterna. Kontrollera användarnamn/lösenord eller API-nyckel."
+      "invalid_auth": "WUD avvisade autentiseringsuppgifterna. Kontrollera användarnamn/lösenord eller API-nyckel.",
+      "forbidden": "WUD godkände uppgifterna men de får inte läsa containrar. Använd en användare med rollen admin/rw/ro, eller en API-token med behörigheten 'read' eller 'write'."
     },
     "abort": {
       "already_configured": "Den här WUD-instansen är redan konfigurerad.",
@@ -101,7 +102,8 @@
     },
     "error": {
       "cannot_connect": "Det gick inte att ansluta till WUD. Kontrollera värd, port, HTTPS-/certifikatinställningar och inloggningsuppgifter.",
-      "invalid_auth": "WUD avvisade autentiseringsuppgifterna. Kontrollera användarnamn/lösenord eller API-nyckel."
+      "invalid_auth": "WUD avvisade autentiseringsuppgifterna. Kontrollera användarnamn/lösenord eller API-nyckel.",
+      "forbidden": "WUD godkände uppgifterna men de får inte läsa containrar. Använd en användare med rollen admin/rw/ro, eller en API-token med behörigheten 'read' eller 'write'."
     }
   },
   "selector": {

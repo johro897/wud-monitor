@@ -111,12 +111,25 @@ WUD_AUTH_BASIC_JOHNDOE_USER: johndoe
 WUD_AUTH_BASIC_JOHNDOE_PASSWORD: secret
 ```
 
-**API Key** — enter the API key configured in WUD. It is sent as a `Bearer` token in the `Authorization` header:
+**API Key** — enter the API key. It is sent as a `Bearer` token in the `Authorization` header:
 
 ```yaml
-# Example WUD environment variable for API Key
+# WUD 8 and earlier: static token set through an environment variable
 WUD_AUTH_BEARER_MYTOKEN_TOKEN: mysecrettoken
 ```
+
+On **WUD 9 and later** the `WUD_AUTH_BEARER_*` variables no longer exist; use a **personal API token** (starts with `wud_`) created in the WUD web UI instead.
+
+#### WUD 9 and later
+
+WUD 9.0.0 removed anonymous access — every API request needs credentials, so pick **Basic Auth** or **API Key** here. What the credentials may do depends on their permissions in WUD:
+
+| Used by this integration | Needs |
+|---|---|
+| Polling container data (all sensors) | User role `admin`, `rw` or `ro`; API token scope `read` (or `write`) |
+| Force Scan buttons (scan all, per project, per container) | User role `admin` or `rw`; API token scope `write` |
+
+A read-only user or `read`-scoped token connects fine and shows all data, but the scan buttons are refused by WUD (HTTP 403). The integration logs WUD's own error message when that happens. Use a `write`-scoped token (or a `rw` user) if you want the scan buttons to work. WUD 8 and earlier are unaffected.
 
 Settings can be changed later via the integration's **Configure** button, including switching authentication method or protocol. The integration reloads itself when you save, so changes take effect immediately.
 
@@ -178,11 +191,13 @@ Verify that the WUD API is reachable from Home Assistant:
 http://<wud_host>:<wud_port>/api/containers
 https://<wud_host>:<wud_port>/api/containers   # when Use HTTPS is enabled
 ```
-This should return a JSON array of your monitored containers. If you get a `401 Unauthorized` response, your WUD instance requires authentication — reconfigure the integration and select the correct auth method.
+This should return a JSON array of your monitored containers. If you get a `401 Unauthorized` response, your WUD instance requires authentication (always the case on WUD 9+) — reconfigure the integration and select the correct auth method.
 
 **Authentication fails**
 - For Basic Auth: verify the username and password match the `WUD_AUTH_BASIC_*` environment variables in your WUD container
-- For API Key: verify the token matches `WUD_AUTH_BEARER_*_TOKEN` and that it is sent as a `Bearer` token
+- For API Key: on WUD 8 verify the token matches `WUD_AUTH_BEARER_*_TOKEN`; on WUD 9+ use a personal API token (`wud_…`) from the WUD UI. It is sent as a `Bearer` token
+- **"not allowed to read containers" / HTTP 403** (WUD 9+): the credentials are valid but the user role or token scope is too limited — see [WUD 9 and later](#wud-9-and-later)
+- **Scan buttons do nothing** but data updates fine (WUD 9+): the credentials are read-only. Check the Home Assistant log for `WUD rejected … HTTP 403`, and use a `write`-scoped token or a `rw` user
 - You can test from the command line: `curl -H "Authorization: Bearer <token>" http://<wud_host>:<wud_port>/api/containers`
 
 **HTTPS connection fails**
@@ -199,6 +214,14 @@ Check the poll interval in the integration settings. You can also press the **Fo
 ---
 
 ## Changelog
+
+### 2.6.3
+**WUD 9 compatibility** — [#21](https://github.com/johro897/wud-monitor/issues/21)
+- A `403 Forbidden` from WUD 9 (valid credentials, but the user role or API-token scope is too limited) is now handled like `401`: Home Assistant prompts for new credentials instead of the integration silently failing
+- The config flow shows a dedicated error for 403 ("not allowed to read containers") instead of "cannot connect"
+- WUD's own error message (`{"error", "message"}` in WUD 9) is now included in the log for failed polls and refused scan requests, with a hint when a scan is refused for lack of write access
+- README documents WUD 9 authentication: anonymous access is gone, `WUD_AUTH_BEARER_*` is replaced by personal API tokens, and which role/scope each feature needs
+- No behaviour change against WUD 8 or earlier, and no new config options
 
 ### 2.6.2
 **Device registry deprecation fix** — [#19](https://github.com/johro897/wud-monitor/issues/19)

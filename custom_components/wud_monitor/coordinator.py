@@ -20,7 +20,7 @@ from .const import (
     DEFAULT_VERIFY_SSL,
     DOMAIN,
 )
-from .helpers import build_base_url
+from .helpers import async_read_error, build_base_url
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -124,12 +124,21 @@ class WUDCoordinator(DataUpdateCoordinator):
                 timeout=aiohttp.ClientTimeout(total=15),
                 **self._session_kwargs(),
             ) as response:
-                if response.status == 401:
+                if response.status in (401, 403):
+                    # 401: missing/wrong credentials. 403 (WUD 9+): valid
+                    # credentials but the user role or API-token scope may not
+                    # read containers. Either way new credentials are needed.
+                    detail = await async_read_error(response)
                     raise ConfigEntryAuthFailed(
-                        "WUD API returned 401 Unauthorized — check authentication settings"
+                        f"WUD API returned HTTP {response.status}"
+                        f"{f': {detail}' if detail else ''} — check authentication settings"
                     )
                 if response.status != 200:
-                    raise UpdateFailed(f"WUD API returned HTTP {response.status}")
+                    detail = await async_read_error(response)
+                    raise UpdateFailed(
+                        f"WUD API returned HTTP {response.status}"
+                        f"{f': {detail}' if detail else ''}"
+                    )
                 data = await response.json()
                 result = data if isinstance(data, list) else data.get("items", [])
                 self.last_poll_time = datetime.now(timezone.utc)
@@ -139,36 +148,48 @@ class WUDCoordinator(DataUpdateCoordinator):
                 f"Error communicating with WUD at {self._base_url}: {err}"
             ) from err
 
-    async def async_trigger_scan_all(self) -> bool:
-        """Trigger a scan of all containers via POST /api/containers/watch."""
-        from .const import API_CONTAINERS_WATCH
-
-        url = f"{self._base_url}{API_CONTAINERS_WATCH}"
+    async def _async_post_watch(self, url: str, what: str) -> bool:
+        """POST a scan request; log WUD's status and message on failure."""
         try:
             async with self._session().post(
                 url,
                 timeout=aiohttp.ClientTimeout(total=15),
                 **self._session_kwargs(),
             ) as response:
-                return response.status in (200, 202, 204)
+                if response.status in (200, 202, 204):
+                    return True
+                detail = await async_read_error(response)
+                hint = (
+                    " — the WUD user or API token needs write access"
+                    " (role admin/rw, token scope 'write')"
+                    if response.status == 403
+                    else ""
+                )
+                _LOGGER.error(
+                    "WUD rejected %s with HTTP %s%s%s",
+                    what,
+                    response.status,
+                    f": {detail}" if detail else "",
+                    hint,
+                )
+                return False
         except aiohttp.ClientError as err:
-            _LOGGER.error("Failed to trigger WUD scan all: %s", err)
+            _LOGGER.error("Failed to trigger %s: %s", what, err)
             return False
+
+    async def async_trigger_scan_all(self) -> bool:
+        """Trigger a scan of all containers via POST /api/containers/watch."""
+        from .const import API_CONTAINERS_WATCH
+
+        return await self._async_post_watch(
+            f"{self._base_url}{API_CONTAINERS_WATCH}", "WUD scan all"
+        )
 
     async def async_trigger_scan_container(self, container_id: str) -> bool:
         """Trigger a scan for a specific container via POST /api/containers/{id}/watch."""
         from .const import API_CONTAINER_WATCH
 
-        url = f"{self._base_url}{API_CONTAINER_WATCH.format(container_id=container_id)}"
-        try:
-            async with self._session().post(
-                url,
-                timeout=aiohttp.ClientTimeout(total=15),
-                **self._session_kwargs(),
-            ) as response:
-                return response.status in (200, 202, 204)
-        except aiohttp.ClientError as err:
-            _LOGGER.error(
-                "Failed to trigger WUD scan for container %s: %s", container_id, err
-            )
-            return False
+        return await self._async_post_watch(
+            f"{self._base_url}{API_CONTAINER_WATCH.format(container_id=container_id)}",
+            f"WUD scan for container {container_id}",
+        )

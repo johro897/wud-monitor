@@ -113,9 +113,10 @@ def _build_headers(data: dict) -> dict:
 async def _test_connection(hass: HomeAssistant, data: dict) -> str:
     """Test that we can reach the WUD API with the given config.
 
-    Returns "ok", "invalid_auth" (WUD reachable but rejected the
-    credentials), or "cannot_connect" (host unreachable, timeout, TLS
-    verification failure, or any other non-200/401 response).
+    Returns "ok", "invalid_auth" (401: WUD rejected the credentials),
+    "forbidden" (403, WUD 9+: credentials accepted but not allowed to read
+    containers), or "cannot_connect" (host unreachable, timeout, TLS
+    verification failure, or any other non-200/401/403 response).
     """
     use_ssl = data.get(CONF_USE_SSL, DEFAULT_USE_SSL)
     base_url = build_base_url(data[CONF_HOST], data[CONF_PORT], use_ssl)
@@ -136,6 +137,8 @@ async def _test_connection(hass: HomeAssistant, data: dict) -> str:
                 return "ok"
             if response.status == 401:
                 return "invalid_auth"
+            if response.status == 403:
+                return "forbidden"
             return "cannot_connect"
     except Exception:  # noqa: BLE001
         return "cannot_connect"
@@ -212,7 +215,7 @@ class WUDMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         result = await _test_connection(self.hass, self._data)
         if result != "ok":
-            errors["base"] = "invalid_auth" if result == "invalid_auth" else "cannot_connect"
+            errors["base"] = result
             # Return to the auth step so the user can correct credentials
             auth_method = self._data.get(CONF_AUTH_METHOD, AUTH_METHOD_NONE)
             if auth_method == AUTH_METHOD_BASIC:
@@ -262,7 +265,7 @@ class WUDMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 # __init__.py now handles it automatically whenever entry
                 # data changes, including this one.
                 return self.async_abort(reason="reauth_successful")
-            errors["base"] = "invalid_auth" if result == "invalid_auth" else "cannot_connect"
+            errors["base"] = result
 
         auth_method = self._data.get(CONF_AUTH_METHOD, AUTH_METHOD_NONE)
         if auth_method == AUTH_METHOD_BASIC:
@@ -348,7 +351,7 @@ class WUDMonitorOptionsFlow(config_entries.OptionsFlow):
 
         result = await _test_connection(self.hass, self._data)
         if result != "ok":
-            errors["base"] = "invalid_auth" if result == "invalid_auth" else "cannot_connect"
+            errors["base"] = result
             auth_method = self._data.get(CONF_AUTH_METHOD, AUTH_METHOD_NONE)
             if auth_method == AUTH_METHOD_BASIC:
                 return self.async_show_form(

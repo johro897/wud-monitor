@@ -57,7 +57,8 @@
     },
     "error": {
       "cannot_connect": "Impossible de se connecter à WUD. Vérifiez l'hôte, le port, les paramètres HTTPS/certificat et les identifiants.",
-      "invalid_auth": "WUD a rejeté les identifiants. Vérifiez le nom d'utilisateur/mot de passe ou la clé API."
+      "invalid_auth": "WUD a rejeté les identifiants. Vérifiez le nom d'utilisateur/mot de passe ou la clé API.",
+      "forbidden": "WUD a accepté les identifiants mais ils n'ont pas le droit de lire les conteneurs. Utilisez un utilisateur avec le rôle admin/rw/ro, ou un jeton API avec la portée 'read' ou 'write'."
     },
     "abort": {
       "already_configured": "Cette instance WUD est déjà configurée.",
@@ -101,7 +102,8 @@
     },
     "error": {
       "cannot_connect": "Impossible de se connecter à WUD. Vérifiez l'hôte, le port, les paramètres HTTPS/certificat et les identifiants.",
-      "invalid_auth": "WUD a rejeté les identifiants. Vérifiez le nom d'utilisateur/mot de passe ou la clé API."
+      "invalid_auth": "WUD a rejeté les identifiants. Vérifiez le nom d'utilisateur/mot de passe ou la clé API.",
+      "forbidden": "WUD a accepté les identifiants mais ils n'ont pas le droit de lire les conteneurs. Utilisez un utilisateur avec le rôle admin/rw/ro, ou un jeton API avec la portée 'read' ou 'write'."
     }
   },
   "selector": {

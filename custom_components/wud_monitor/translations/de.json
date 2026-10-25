@@ -57,7 +57,8 @@
     },
     "error": {
       "cannot_connect": "Verbindung zu WUD nicht möglich. Überprüfen Sie Host, Port, HTTPS-/Zertifikatseinstellungen und Zugangsdaten.",
-      "invalid_auth": "WUD hat die Zugangsdaten abgelehnt. Überprüfen Sie Benutzername/Passwort oder den API-Schlüssel."
+      "invalid_auth": "WUD hat die Zugangsdaten abgelehnt. Überprüfen Sie Benutzername/Passwort oder den API-Schlüssel.",
+      "forbidden": "WUD hat die Zugangsdaten akzeptiert, sie dürfen aber keine Container lesen. Verwenden Sie einen Benutzer mit der Rolle admin/rw/ro oder ein API-Token mit dem Scope 'read' oder 'write'."
     },
     "abort": {
       "already_configured": "Diese WUD-Instanz ist bereits konfiguriert.",
@@ -101,7 +102,8 @@
     },
     "error": {
       "cannot_connect": "Verbindung zu WUD nicht möglich. Überprüfen Sie Host, Port, HTTPS-/Zertifikatseinstellungen und Zugangsdaten.",
-      "invalid_auth": "WUD hat die Zugangsdaten abgelehnt. Überprüfen Sie Benutzername/Passwort oder den API-Schlüssel."
+      "invalid_auth": "WUD hat die Zugangsdaten abgelehnt. Überprüfen Sie Benutzername/Passwort oder den API-Schlüssel.",
+      "forbidden": "WUD hat die Zugangsdaten akzeptiert, sie dürfen aber keine Container lesen. Verwenden Sie einen Benutzer mit der Rolle admin/rw/ro oder ein API-Token mit dem Scope 'read' oder 'write'."
     }
   },
   "selector": {
