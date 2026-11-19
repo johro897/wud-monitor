@@ -15,6 +15,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_INSTANCE_NAME, CONTROLLER_DEVICE_SUFFIX, DOMAIN
 from .coordinator import WUDCoordinator
+from .helpers import get_current_version
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,21 +24,6 @@ def _get_compose_project(container: dict) -> str | None:
     """Extract the Docker Compose project name from container labels."""
     labels = container.get("labels", {}) or {}
     return labels.get("com.docker.compose.project")
-
-
-def _get_current_version(container: dict) -> str:
-    """
-    Return the currently running version.
-    Prefers org.opencontainers.image.version from labels (e.g. '2026.2.4')
-    over image.tag.value which may be truncated (e.g. '2026.2').
-    """
-    labels = container.get("labels", {}) or {}
-    oci_version = labels.get("org.opencontainers.image.version")
-    if oci_version:
-        return oci_version
-    image = container.get("image", {}) or {}
-    tag = image.get("tag", {}) or {}
-    return tag.get("value", "unknown")
 
 
 def _get_new_version(container: dict) -> str | None:
@@ -52,7 +38,7 @@ def _get_new_version(container: dict) -> str | None:
         return remote
     result = container.get("result", {}) or {}
     tag = result.get("tag")
-    if tag and tag != _get_current_version(container):
+    if tag and tag != get_current_version(container):
         return tag
     return None
 
@@ -201,7 +187,7 @@ class WUDUpdateCountSensor(WUDControllerSensorBase):
         updates = [
             {
                 "name": c.get("name"),
-                "current_version": _get_current_version(c),
+                "current_version": get_current_version(c),
                 "new_version": _get_new_version(c) or "–",
                 "semver_diff": (c.get("updateKind") or {}).get("semverDiff"),
             }
@@ -345,7 +331,7 @@ class WUDContainerSensor(CoordinatorEntity, SensorEntity):
         registry = image.get("registry", {}) or {}
         update_kind = container.get("updateKind", {}) or {}
 
-        current = _get_current_version(container)
+        current = get_current_version(container)
         new = _get_new_version(container)
         available_since, days_available = _get_image_created(container)
 
