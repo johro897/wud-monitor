@@ -215,6 +215,10 @@ Check the poll interval in the integration settings. You can also press the **Fo
 
 ## Changelog
 
+### Unreleased
+**Lighter brand icon** — [#27](https://github.com/johro897/wud-monitor/issues/27)
+- The integration icon was 1.6 MB and loaded slowly in the integrations page and the HACS listing. It is now a trimmed, optimised square image (218 kB) with a 512×512 hDPI version (`icon@2x.png`, 359 kB). Thanks to @michaelherger for the report and the images
+
 ### 2.6.4
 **Wrong `current_version` for images built on another image** — [#26](https://github.com/johro897/wud-monitor/issues/26)
 - Containers whose image inherits the `org.opencontainers.image.version` label from its base image (for example a MongoDB image built on Ubuntu, which then showed `26.04` instead of `9.0.4`) now report their own tag as `current_version`
