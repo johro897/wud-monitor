@@ -215,6 +215,12 @@ Check the poll interval in the integration settings. You can also press the **Fo
 
 ## Changelog
 
+### 2.6.4
+**Wrong `current_version` for images built on another image** — [#26](https://github.com/johro897/wud-monitor/issues/26)
+- Containers whose image inherits the `org.opencontainers.image.version` label from its base image (for example a MongoDB image built on Ubuntu, which then showed `26.04` instead of `9.0.4`) now report their own tag as `current_version`
+- The label is still used when it is a more precise form of the tag (`2026.2` becomes `2026.2.4`), and when the tag carries no version, such as `latest`
+- No new options. Entities, devices and their IDs are unchanged
+
 ### 2.6.3
 **WUD 9 compatibility** — [#21](https://github.com/johro897/wud-monitor/issues/21)
 - A `403 Forbidden` from WUD 9 (valid credentials, but the user role or API-token scope is too limited) is now handled like `401`: Home Assistant prompts for new credentials instead of the integration silently failing
