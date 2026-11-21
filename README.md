@@ -215,7 +215,7 @@ Check the poll interval in the integration settings. You can also press the **Fo
 
 ## Changelog
 
-### Unreleased
+### 2.6.4
 **Wrong `current_version` for images built on another image** — [#26](https://github.com/johro897/wud-monitor/issues/26)
 - Containers whose image inherits the `org.opencontainers.image.version` label from its base image (for example a MongoDB image built on Ubuntu, which then showed `26.04` instead of `9.0.4`) now report their own tag as `current_version`
 - The label is still used when it is a more precise form of the tag (`2026.2` becomes `2026.2.4`), and when the tag carries no version, such as `latest`
