@@ -64,3 +64,24 @@ def get_current_version(container: dict) -> str:
     ):
         return oci_version
     return tag
+
+
+# Watcher names WUD uses by default (``local`` in WUD 9, ``docker`` before).
+# Containers on these watchers keep their plain names; any other watcher is
+# shown in entity names so same-named containers on different hosts differ.
+DEFAULT_WATCHERS = frozenset({"local", "docker"})
+
+
+def watcher_scope(container: dict) -> str | None:
+    """Return the watcher name to show for a container, or None for default watchers."""
+    watcher = container.get("watcher") or "docker"
+    return None if watcher in DEFAULT_WATCHERS else watcher
+
+
+def scoped_name(label: str, container: dict) -> str:
+    """Return ``label`` with the watcher in parentheses for non-default watchers.
+
+    ``scoped_name("Glances", {"watcher": "minecraft"})`` -> ``"Glances (minecraft)"``.
+    """
+    scope = watcher_scope(container)
+    return f"{label} ({scope})" if scope else label

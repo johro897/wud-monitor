@@ -216,6 +216,13 @@ Check the poll interval in the integration settings. You can also press the **Fo
 ## Changelog
 
 ### Unreleased
+**Containers on several WUD watchers** — [#28](https://github.com/johro897/wud-monitor/issues/28)
+- If WUD has more than one watcher (`WUD_WATCHER_<NAME>_*`), containers with the same name on different hosts no longer end up with `_2`/`_3` entity IDs. Entities on a watcher other than `local`/`docker` now include the watcher in their name, for example `Glances (minecraft) Update Available`
+- The per-project scan button is now created per watcher and project, instead of one merged button for projects that share a name across watchers
+- Setups with only the default watcher (`local`, or `docker` on WUD 8) are unchanged
+- Existing entity IDs are not renamed by Home Assistant. To get clean IDs for entities that already carry a suffix, rename them under Settings → Devices & services → Entities, or remove and re-add the integration
+- Note for non-default watchers: the display name of their entities changes, and their project scan button gets a new `unique_id`, so the old one shows as unavailable and can be deleted. Devices are still shared across watchers
+
 **Lighter brand icon** — [#27](https://github.com/johro897/wud-monitor/issues/27)
 - The integration icon was 1.6 MB and loaded slowly in the integrations page and the HACS listing. It is now a trimmed, optimised square image (218 kB) with a 512×512 hDPI version (`icon@2x.png`, 359 kB). Thanks to @michaelherger for the report and the images
 

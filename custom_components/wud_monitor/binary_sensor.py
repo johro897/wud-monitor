@@ -15,6 +15,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_INSTANCE_NAME, DOMAIN
 from .coordinator import WUDCoordinator
+from .helpers import scoped_name
 from .sensor import _build_container_device, _get_error_message
 
 _LOGGER = logging.getLogger(__name__)
@@ -56,7 +57,7 @@ class WUDContainerProblemBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self._container_name = container["name"]
         self._container_watcher = container.get("watcher", "docker")
 
-        self._attr_name = f"{container['name']} Problem"
+        self._attr_name = f"{scoped_name(container['name'], container)} Problem"
 
         # Stable unique_id — uses entry_id + watcher + name, same scheme as
         # WUDContainerSensor. Container ID changes on every redeploy; watcher
