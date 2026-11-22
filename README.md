@@ -223,6 +223,10 @@ Check the poll interval in the integration settings. You can also press the **Fo
 - Existing entity IDs are not renamed by Home Assistant. To get clean IDs for entities that already carry a suffix, rename them under Settings → Devices & services → Entities, or remove and re-add the integration
 - Note for non-default watchers: the display name of their entities changes, and their project scan button gets a new `unique_id`, so the old one shows as unavailable and can be deleted. Devices are still shared across watchers
 
+**Container name as an attribute** — [#32](https://github.com/johro897/wud-monitor/issues/32)
+- The per-container "Update Available" sensors now have a `container_name` attribute with the container's name as WUD reports it, so other cards (for example the Docker Card Extended editor's import) can match a sensor to a container without parsing its display name
+- Additive only: no entity, ID or state changes
+
 **Lighter brand icon** — [#27](https://github.com/johro897/wud-monitor/issues/27)
 - The integration icon was 1.6 MB and loaded slowly in the integrations page and the HACS listing. It is now a trimmed, optimised square image (218 kB) with a 512×512 hDPI version (`icon@2x.png`, 359 kB). Thanks to @michaelherger for the report and the images
 

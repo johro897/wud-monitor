@@ -336,6 +336,7 @@ class WUDContainerSensor(CoordinatorEntity, SensorEntity):
         available_since, days_available = _get_image_created(container)
 
         attrs: dict = {
+            "container_name": self._container_name,
             "container_id": container.get("id"),
             "image": image.get("name", "unknown"),
             "registry": registry.get("name", "unknown"),
