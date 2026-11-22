@@ -17,6 +17,7 @@ from .sensor import (
     _build_controller_device,
     _get_compose_project,
 )
+from .helpers import scoped_name, watcher_scope
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,8 +37,10 @@ async def async_setup_entry(
     entities.append(WUDScanAllButton(coordinator, entry, instance_name))
     entities.append(WUDRefreshButton(coordinator, entry, instance_name))
 
-    # Track which compose projects already have a scan button to avoid duplicates
-    projects_seen: set[str] = set()
+    # Track which (watcher, project) pairs already have a scan button to avoid
+    # duplicates. The watcher is part of the key so a project with the same name
+    # on two WUD watchers (hosts) gets one button each, not one merged button.
+    projects_seen: set[tuple[str, str]] = set()
 
     for container in coordinator.data or []:
         project = _get_compose_project(container)
@@ -47,10 +50,14 @@ async def async_setup_entry(
 
         # One scan button per compose project, but only if the project has
         # more than one container — otherwise it is identical to the container scan button
-        if project and project not in projects_seen:
-            projects_seen.add(project)
+        project_key = (watcher_scope(container) or "", project)
+        if project and project_key not in projects_seen:
+            projects_seen.add(project_key)
             project_containers = [
-                c for c in coordinator.data if _get_compose_project(c) == project
+                c
+                for c in coordinator.data
+                if _get_compose_project(c) == project
+                and (watcher_scope(c) or "") == project_key[0]
             ]
             if len(project_containers) > 1:
                 entities.append(
@@ -134,8 +141,12 @@ class WUDProjectScanButton(CoordinatorEntity, ButtonEntity):
         # so they must be re-resolved from live coordinator data on each press
         # (same reasoning as WUDContainerScanButton._get_current_container_id).
         self._container_keys = [(c["name"], c.get("watcher", "docker")) for c in containers]
-        self._attr_name = f"{instance_name} – {project} Force Scan"
-        self._attr_unique_id = f"wud_{entry.entry_id}_project_scan_{project}"
+        self._attr_name = f"{instance_name} – {scoped_name(project, containers[0])} Force Scan"
+        # Default watchers keep the original unique_id; other watchers add theirs
+        # so the same project name on two watchers does not collide.
+        scope = watcher_scope(containers[0])
+        scope_part = f"{scope}_" if scope else ""
+        self._attr_unique_id = f"wud_{entry.entry_id}_project_scan_{scope_part}{project}"
         self._attr_icon = "mdi:refresh"
 
         # Use the first container to build the project device info
@@ -178,7 +189,7 @@ class WUDContainerScanButton(CoordinatorEntity, ButtonEntity):
         self._container_name = container["name"]
         self._container_watcher = container.get("watcher", "docker")
 
-        self._attr_name = f"{container['name']} Force Scan"
+        self._attr_name = f"{scoped_name(container['name'], container)} Force Scan"
         self._attr_unique_id = (
             f"wud_{entry.entry_id}_{self._container_watcher}_{self._container_name}_scan"
         )

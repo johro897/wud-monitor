@@ -15,7 +15,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_INSTANCE_NAME, CONTROLLER_DEVICE_SUFFIX, DOMAIN
 from .coordinator import WUDCoordinator
-from .helpers import get_current_version
+from .helpers import get_current_version, scoped_name
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -279,7 +279,7 @@ class WUDContainerSensor(CoordinatorEntity, SensorEntity):
         self._container_name = container["name"]
         self._container_watcher = container.get("watcher", "docker")
 
-        self._attr_name = f"{container['name']} Update Available"
+        self._attr_name = f"{scoped_name(container['name'], container)} Update Available"
 
         # Stable unique_id — uses entry_id + watcher + name.
         # Container ID changes on every redeploy; watcher and name do not.
@@ -336,6 +336,7 @@ class WUDContainerSensor(CoordinatorEntity, SensorEntity):
         available_since, days_available = _get_image_created(container)
 
         attrs: dict = {
+            "container_name": self._container_name,
             "container_id": container.get("id"),
             "image": image.get("name", "unknown"),
             "registry": registry.get("name", "unknown"),

@@ -12,6 +12,7 @@ A Home Assistant integration for [What's Up Docker (WUD)](https://github.com/get
 - **Controller sensors** — total containers monitored, containers with updates, last poll time
 - **Force scan buttons** — trigger WUD to re-check updates for all containers, a specific compose project, or a single container
 - **Compose project grouping** — containers sharing a Docker Compose project are grouped under one HA device
+- **Several WUD watchers** — containers on more than one WUD watcher (for example several Docker hosts) get their own, distinguishable entities, see [Several WUD watchers](#several-wud-watchers)
 - **Authentication support** — connect to WUD instances protected by Basic Auth or API Key
 - **HTTPS support** — reach WUD over TLS, with optional certificate verification for self-signed certs
 - **Re-deploy safe** — sensor identity is based on container name and watcher, not the Docker container ID which changes on every redeploy
@@ -25,7 +26,7 @@ A Home Assistant integration for [What's Up Docker (WUD)](https://github.com/get
 
 - Home Assistant 2026.8 or newer
 - [HACS](https://hacs.xyz/) installed
-- A running [What's Up Docker](https://github.com/getwud/wud) instance (tested with WUD 8.2+)
+- A running [What's Up Docker](https://github.com/getwud/wud) instance (tested with WUD 8.2+ and WUD 9.x)
 
 ### WUD container labels
 
@@ -60,6 +61,14 @@ labels:
 ```
 
 Without this label WUD has no changelog URL to give, so `release_notes` simply won't be present on the sensor — nothing else is affected.
+
+### Upgrading WUD itself to 9
+
+These come from WUD, not from this integration, and are the usual stumbling blocks when moving a WUD container from 8 to 9. WUD's own documentation is the authority; check it for your version.
+
+- **Credentials are mandatory.** WUD 9 does not start without authentication. Set a bootstrap admin user with `WUD_AUTH_ADMIN_USER` and `WUD_AUTH_ADMIN_PASSWORD`, then use that user (Basic Auth) or a personal API token in this integration
+- **`docker` is a reserved provider name.** `WUD_WATCHER_DOCKER_*` variables no longer define a watcher called `docker`; rename them to `WUD_WATCHER_LOCAL_*`, otherwise WUD may watch nothing
+- **Keep `/store` on a volume.** Without one WUD starts with an empty database every time the container is re-created
 
 ---
 
@@ -156,13 +165,14 @@ Keep **Verify SSL certificate** on whenever the certificate is issued by a CA Ho
 
 ### Compose project device (`{instance_name} – {project}`)
 
-One device per Docker Compose project. Linked to the Controller device via `via_device`.
+One device per Docker Compose project, shown as connected to the Controller device. Containers that do not belong to a Compose project are placed directly on the Controller device.
 
 | Entity | Type | Description |
 |---|---|---|
 | {container} Update Available | Sensor | Per-container update status |
 | {container} Problem | Binary sensor (`problem`) | On when WUD reports an error for this specific container — automate directly on "this container is broken" instead of templating the sensor's `error` attribute |
-| Force Scan | Button | Scans each container in the project individually |
+| Force Scan | Button | Scans each container in the project individually (only created for projects with more than one container) |
+| {container} Force Scan | Button | Scans this one container |
 
 ### Per-container sensor attributes
 
@@ -179,7 +189,23 @@ One device per Docker Compose project. Linked to the Controller device via `via_
 | `registry` | Registry name (e.g. `ghcr.public`, `hub.public`) |
 | `compose_project` | Docker Compose project name |
 | `status` | Container runtime status (e.g. `running`) |
-| `watcher` | WUD watcher name (e.g. `docker`) |
+| `container_name` | The container's name as WUD reports it — handy for templates and for other cards that need to match a sensor to a container |
+| `watcher` | WUD watcher name (`local` or `docker` by default, or the name from your `WUD_WATCHER_<NAME>_*` variables) |
+
+### Several WUD watchers
+
+WUD can watch more than one Docker host: each `WUD_WATCHER_<NAME>_*` set of variables defines a watcher, and `<NAME>` becomes its name. To keep same-named containers on different hosts apart, entities on a watcher **other than** `local` or `docker` include the watcher in their name:
+
+| Watcher | Sensor name |
+|---|---|
+| `local` (default) | `Glances Update Available` |
+| `minecraft` | `Glances (minecraft) Update Available` |
+
+Home Assistant builds the entity ID from these names, so same-named containers on different watchers now get different IDs. The exact ID depends on your Home Assistant version (recent versions may also put the device name in it).
+
+The same applies to the Problem sensor and the Force Scan buttons, and the per-project Force Scan button is created per watcher and project. Setups with only the default watcher see no change. Devices are still shared across watchers.
+
+Home Assistant does not rename entity IDs that already exist. If you already have entities with `_2`/`_3` suffixes, rename them under **Settings → Devices & services → Entities**, or remove and re-add the integration.
 
 ---
 
@@ -208,6 +234,9 @@ This should return a JSON array of your monitored containers. If you get a `401 
 **Duplicate sensors after container redeploy**
 This integration uses `watcher + name` as the stable entity identity, not the Docker container ID. If you are upgrading from an older version that used container ID, delete the old `unavailable` entities manually under **Settings → Devices & Services**.
 
+**Entities with `_2` / `_3` suffixes**
+Normally this means two containers produced the same entity name, for example the same container name on two WUD watchers (fixed for new entities, see [Several WUD watchers](#several-wud-watchers)), or an old, now `unavailable` entity still holds the plain ID after you removed and re-added the integration. Delete the `unavailable` entities under **Settings → Devices & services → Entities** and rename the live one if you want the plain ID back.
+
 **Sensors not updating**
 Check the poll interval in the integration settings. You can also press the **Force Scan All** button to trigger an immediate refresh.
 
@@ -215,9 +244,23 @@ Check the poll interval in the integration settings. You can also press the **Fo
 
 ## Changelog
 
-### Unreleased
+### 2.6.6
+**Containers on several WUD watchers** — [#28](https://github.com/johro897/wud-monitor/issues/28)
+- If WUD has more than one watcher (`WUD_WATCHER_<NAME>_*`), containers with the same name on different hosts no longer end up with `_2`/`_3` entity IDs. Entities on a watcher other than `local`/`docker` now include the watcher in their name, for example `Glances (minecraft) Update Available`
+- The per-project scan button is now created per watcher and project, instead of one merged button for projects that share a name across watchers
+- Setups with only the default watcher (`local`, or `docker` on WUD 8) are unchanged
+- Existing entity IDs are not renamed by Home Assistant. To get clean IDs for entities that already carry a suffix, rename them under Settings → Devices & services → Entities, or remove and re-add the integration
+- Note for non-default watchers: the display name of their entities changes, and their project scan button gets a new `unique_id`, so the old one shows as unavailable and can be deleted. Devices are still shared across watchers
+
+**Container name as an attribute** — [#32](https://github.com/johro897/wud-monitor/issues/32)
+- The per-container "Update Available" sensors now have a `container_name` attribute with the container's name as WUD reports it, so other cards (for example the Docker Card Extended editor's import) can match a sensor to a container without parsing its display name
+- Additive only: no entity, ID or state changes
+
 **Lighter brand icon** — [#27](https://github.com/johro897/wud-monitor/issues/27)
 - The integration icon was 1.6 MB and loaded slowly in the integrations page and the HACS listing. It is now a trimmed, optimised square image (218 kB) with a 512×512 hDPI version (`icon@2x.png`, 359 kB). Thanks to @michaelherger for the report and the images
+
+**Documentation**
+- New sections on several WUD watchers and on the three things that change when WUD itself is upgraded to 9 (mandatory admin credentials, `WUD_WATCHER_LOCAL_*`, a volume for `/store`), a troubleshooting entry for `_2`/`_3` entity suffixes, and the per-container Force Scan button and `container_name` attribute in the entity tables
 
 ### 2.6.4
 **Wrong `current_version` for images built on another image** — [#26](https://github.com/johro897/wud-monitor/issues/26)
